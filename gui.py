@@ -11,6 +11,7 @@ import io
 import json
 import math
 import os
+import re
 import queue
 import random
 import subprocess
@@ -95,6 +96,8 @@ RARITY_COLORS = {
     "epic": "#7d3dba", "legendary": "#c2712c", "mythic": "#e7c03a",
     "exotic": "#21c5e7", "slurp": "#00bcd4",
 }
+
+PAK_REGEX = re.compile(r'pakchunk\d{4}-WindowsClient\.pak')
 
 
 # ── console redirector ─────────────────────────────────────────────────────────
@@ -402,8 +405,11 @@ class DashboardPage(_Page):
                 patch = raw_build[:20]
             main_key  = aes.get("mainKey", "—")
             dyn_keys  = aes.get("dynamicKeys") or []
-            dyn_count = len(dyn_keys)
-            self._aes_dynamic_keys = dyn_keys
+            self._aes_dynamic_keys = sorted(
+                (key for key in dyn_keys if key.get("pakFilename") and PAK_REGEX.match(key.get("pakFilename"))),
+                key=lambda key: key["pakFilename"],
+            )
+            dyn_count = len(self._aes_dynamic_keys)
             self.after(0, lambda: self._aes_label.configure(text=patch or "—"))
             self.after(0, lambda: self._aes_key_lbl.configure(text=main_key))
             self.after(0, lambda n=dyn_count: self._dyn_toggle_btn.configure(
