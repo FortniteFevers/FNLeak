@@ -41,7 +41,7 @@ SHOP_COLS    = 6
 HEADER_H     = 200   # section header bar height
 # Font to always use for shop (regardless of settings sideFont)
 _SHOP_FONT   = os.path.join("fonts", "BurbankBigRegular-BlackItalic.otf")
-_HISTORY_FILE = "shop_history.json"
+_HISTORY_FILE = os.path.join("json", "shop_history.json")
 
 _VBUCKS_URL         = "https://fortnite-api.com/images/vbuck.png"
 _vbucks_icon_cache: dict[int, "Image.Image"] = {}
