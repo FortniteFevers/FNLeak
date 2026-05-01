@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import io
 import json
+import math
 import os
 import queue
+import random
 import subprocess
 import webbrowser
 import sys
@@ -36,7 +38,9 @@ if hasattr(sys, "_MEIPASS"):
             _shutil.copytree(_src, _dst)
 
     # Copy default config files if not already customised
-    for _f in ("settings.json", "shop_history.json"):
+    os.makedirs(os.path.join(_DATA, "json"), exist_ok=True)
+    for _f in (os.path.join("json", "settings.json"),
+               os.path.join("json", "shop_history.json")):
         _dst = os.path.join(_DATA, _f)
         _src = os.path.join(_BUNDLE, _f)
         if not os.path.exists(_dst) and os.path.exists(_src):
@@ -83,7 +87,8 @@ C = {
 }
 
 FORTNITE_API = "https://fortnite-api.com"
-SETTINGS_PATH = "settings.json"
+JSON_DIR      = "json"
+SETTINGS_PATH = os.path.join(JSON_DIR, "settings.json")
 
 RARITY_COLORS = {
     "common": "#636363", "uncommon": "#31a21f", "rare": "#3275c4",
@@ -206,14 +211,21 @@ class DashboardPage(_Page):
         super().__init__(master, app)
         self._news_img_refs = []
 
+        # Scrollable body — allows reaching the news section on short windows
+        self._body = ctk.CTkScrollableFrame(
+            self, fg_color=C["bg"], corner_radius=0,
+            scrollbar_button_color=C["border"],
+        )
+        self._body.pack(fill="both", expand=True)
+
         # Title
-        ctk.CTkLabel(self, text="FNLeak", font=ctk.CTkFont(size=32, weight="bold"),
+        ctk.CTkLabel(self._body, text="FNLeak", font=ctk.CTkFont(size=32, weight="bold"),
                      text_color=C["text"]).pack(pady=(24, 4))
-        ctk.CTkLabel(self, text="Fortnite Cosmetic Leak Tool",
+        ctk.CTkLabel(self._body, text="Fortnite Cosmetic Leak Tool",
                      font=ctk.CTkFont(size=14), text_color=C["text_dim"]).pack(pady=(0, 16))
 
         # Stat cards row
-        self._stats_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self._stats_frame = ctk.CTkFrame(self._body, fg_color="transparent")
         self._stats_frame.pack(fill="x", padx=40, pady=(0, 8))
 
         self._build_label   = self._stat_card("Current Build",  "—",          C["blue"])
@@ -221,29 +233,50 @@ class DashboardPage(_Page):
         self._aes_label     = self._stat_card("AES / Patch",    "Loading…",   C["orange"])
         self._twitter_label = self._stat_card("Twitter / X",    "Checking…",  C["text_dim"])
 
-        # API status bar
-        api_bar = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=8)
-        api_bar.pack(fill="x", padx=40, pady=(4, 0))
-        ctk.CTkLabel(api_bar, text="fortnite-api.com",
-                     font=ctk.CTkFont(size=12), text_color=C["text_dim"]).pack(
-                         side="left", padx=(12, 6), pady=8)
-        self._api_dot = ctk.CTkLabel(api_bar, text="●",
-                                      font=ctk.CTkFont(size=14),
-                                      text_color=C["text_dim"])
-        self._api_dot.pack(side="left")
-        self._api_status_lbl = ctk.CTkLabel(api_bar, text="Checking…",
-                                             font=ctk.CTkFont(size=12),
-                                             text_color=C["text_dim"])
-        self._api_status_lbl.pack(side="left", padx=(4, 0))
+        # API status card — one row per API used by FNLeak
+        api_card = ctk.CTkFrame(self._body, fg_color=C["card"], corner_radius=8)
+        api_card.pack(fill="x", padx=40, pady=(4, 0))
+        ctk.CTkLabel(api_card, text="API STATUS",
+                     font=ctk.CTkFont(size=10), text_color=C["text_dim"]).pack(
+            anchor="w", padx=12, pady=(8, 2))
 
-        # Response time (right side)
-        self._api_ping_lbl = ctk.CTkLabel(api_bar, text="",
-                                           font=_mono_font(11),
-                                           text_color=C["text_dim"])
-        self._api_ping_lbl.pack(side="right", padx=12)
+        def _api_row(parent, name: str, desc: str):
+            row = ctk.CTkFrame(parent, fg_color="transparent")
+            row.pack(fill="x", padx=12, pady=(0, 6))
+            dot = ctk.CTkLabel(row, text="●", font=ctk.CTkFont(size=13),
+                               text_color=C["text_dim"], width=18)
+            dot.pack(side="left")
+            ctk.CTkLabel(row, text=name,
+                         font=ctk.CTkFont(size=12, weight="bold"),
+                         text_color=C["text"], width=170, anchor="w").pack(
+                side="left", padx=(4, 0))
+            status = ctk.CTkLabel(row, text="Checking…",
+                                  font=ctk.CTkFont(size=11),
+                                  text_color=C["text_dim"], width=100, anchor="w")
+            status.pack(side="left", padx=(2, 0))
+            ctk.CTkLabel(row, text=f"— {desc}",
+                         font=ctk.CTkFont(size=11),
+                         text_color=C["text_dim"]).pack(side="left", padx=(6, 0))
+            return dot, status
+
+        self._api_dot,   self._api_status_lbl  = _api_row(
+            api_card, "fortnite-api.com",
+            "Cosmetics, items, AES, news, shop, map")
+        self._fnapi_dot, self._fnapi_status_lbl = _api_row(
+            api_card, "api.fnapi.dev",
+            "Player stats")
+        self._fgg_dot,   self._fgg_status_lbl   = _api_row(
+            api_card, "fortnite.gg",
+            "Historical maps")
+        self._tw_api_dot, self._tw_api_status_lbl = _api_row(
+            api_card, "Twitter/X API v2",
+            "Tweets (optional)")
+
+        # Keep ping label for fortnite-api.com (appended to its status text)
+        self._api_ping_lbl = None   # unused — ping folded into status label
 
         # Quick-action buttons (2 rows of 4)
-        btn_outer = ctk.CTkFrame(self, fg_color="transparent")
+        btn_outer = ctk.CTkFrame(self._body, fg_color="transparent")
         btn_outer.pack(pady=(8, 12))
 
         _actions = [
@@ -277,7 +310,7 @@ class DashboardPage(_Page):
         self._aes_dynamic_keys: list = []
         self._aes_expanded = False
 
-        aes_outer = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=8)
+        aes_outer = ctk.CTkFrame(self._body, fg_color=C["card"], corner_radius=8)
         aes_outer.pack(fill="x", padx=40, pady=(0, 4))
 
         # Main key row
@@ -310,12 +343,12 @@ class DashboardPage(_Page):
         # (hidden by default — shown on toggle)
 
         # News feed
-        ctk.CTkLabel(self, text="📰  Fortnite News",
+        ctk.CTkLabel(self._body, text="📰  Fortnite News",
                      font=ctk.CTkFont(size=13, weight="bold"),
                      text_color=C["text_dim"]).pack(anchor="w", padx=40, pady=(0, 6))
 
         self._news_frame = ctk.CTkScrollableFrame(
-            self, fg_color=C["card"], corner_radius=8, height=160,
+            self._body, fg_color=C["card"], corner_radius=8, height=160,
             orientation="horizontal",
             scrollbar_button_color=C["border"]
         )
@@ -375,25 +408,62 @@ class DashboardPage(_Page):
             self.after(0, lambda: self._aes_key_lbl.configure(text=main_key))
             self.after(0, lambda n=dyn_count: self._dyn_toggle_btn.configure(
                 text=f"▼  Dynamic Keys ({n})"))
-            # API is up
+            # fortnite-api.com is up
             self.after(0, lambda p=ping_ms: (
                 self._api_dot.configure(text_color=C["green"]),
-                self._api_status_lbl.configure(text="Online", text_color=C["green"]),
-                self._api_ping_lbl.configure(text=f"{p} ms", text_color=C["text_dim"]),
+                self._api_status_lbl.configure(
+                    text=f"Online  {p} ms", text_color=C["green"]),
             ))
         except Exception:
             self.after(0, lambda: self._aes_label.configure(text="Error"))
             self.after(0, lambda: (
                 self._api_dot.configure(text_color=C["red"]),
                 self._api_status_lbl.configure(text="Offline", text_color=C["red"]),
-                self._api_ping_lbl.configure(text="", text_color=C["text_dim"]),
             ))
 
-        # ── Twitter ───────────────────────────────────────────────────────────
+        # ── api.fnapi.dev ─────────────────────────────────────────────────────
+        try:
+            t0 = time.time()
+            r  = requests.get("https://api.fnapi.dev/stats/v2/account-type/epic/player-name/Ninja",
+                              timeout=8)
+            ping_ms = int((time.time() - t0) * 1000)
+            # Any response (even 404/error) means the server is reachable
+            self.after(0, lambda p=ping_ms: (
+                self._fnapi_dot.configure(text_color=C["green"]),
+                self._fnapi_status_lbl.configure(
+                    text=f"Online  {p} ms", text_color=C["green"]),
+            ))
+        except Exception:
+            self.after(0, lambda: (
+                self._fnapi_dot.configure(text_color=C["red"]),
+                self._fnapi_status_lbl.configure(text="Offline", text_color=C["red"]),
+            ))
+
+        # ── fortnite.gg ───────────────────────────────────────────────────────
+        try:
+            t0 = time.time()
+            r  = requests.get("https://fortnite.gg", timeout=8)
+            ping_ms = int((time.time() - t0) * 1000)
+            self.after(0, lambda p=ping_ms: (
+                self._fgg_dot.configure(text_color=C["green"]),
+                self._fgg_status_lbl.configure(
+                    text=f"Online  {p} ms", text_color=C["green"]),
+            ))
+        except Exception:
+            self.after(0, lambda: (
+                self._fgg_dot.configure(text_color=C["red"]),
+                self._fgg_status_lbl.configure(text="Offline", text_color=C["red"]),
+            ))
+
+        # ── Twitter / X ───────────────────────────────────────────────────────
         tw_ok    = self.app.tw and self.app.tw.ready
         tw_text  = "Connected" if tw_ok else "Not configured"
         tw_color = C["green"] if tw_ok else C["text_dim"]
         self.after(0, lambda: self._twitter_label.configure(text=tw_text, text_color=tw_color))
+        self.after(0, lambda t=tw_text, c=tw_color: (
+            self._tw_api_dot.configure(text_color=c),
+            self._tw_api_status_lbl.configure(text=t, text_color=c),
+        ))
 
         # ── News ──────────────────────────────────────────────────────────────
         try:
@@ -1522,7 +1592,7 @@ class ShopPage(_Page):
         # Load section metadata (is_new, leaving) saved by generate_shop
         meta: dict = {}
         try:
-            with open("merged/shop_meta.json") as _mf:
+            with open(os.path.join("merged", "shop_meta.json")) as _mf:
                 meta = _json.load(_mf)
         except Exception:
             pass
@@ -2309,13 +2379,13 @@ class MapPage(_Page):
 
     def __init__(self, master, app):
         super().__init__(master, app)
-        self._img_ref:   Optional[ctk.CTkImage] = None
-        self._pil_full:  Optional[PILImage.Image] = None
-        self._blank_url: Optional[str] = None
-        self._pois_url:  Optional[str] = None
-        self._show_pois: bool = True
+        self._img_ref:    Optional[ctk.CTkImage]  = None
+        self._pil_full:   Optional[PILImage.Image] = None
+        self._blank_url:  Optional[str]            = None
+        self._pois_url:   Optional[str]            = None
+        self._show_pois:  bool                     = True
         self._loaded:    bool = False
-        self._load_gen:  int  = 0   # increment to cancel stale loads
+        self._load_gen:  int  = 0
 
         # ── Header row ──────────────────────────────────────────────────────
         hdr = ctk.CTkFrame(self, fg_color="transparent")
@@ -2944,6 +3014,7 @@ class SettingsPage(_Page):
     def _build_form(self):
         f = self._form
         cfg = self.app.cfg
+        row_idx = 0
 
         sections = [
             ("General", [
@@ -2976,7 +3047,6 @@ class SettingsPage(_Page):
             ]),
         ]
 
-        row_idx = 0
         for section_name, fields in sections:
             lbl = ctk.CTkLabel(f, text=section_name,
                                font=ctk.CTkFont(size=14, weight="bold"),
@@ -3022,6 +3092,64 @@ class SettingsPage(_Page):
 
                 row_idx += 1
 
+        # ── Cache section (after all other sections) ────────────────────────
+        ctk.CTkLabel(f, text="Cache",
+                     font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=C["accent"]).grid(
+            row=row_idx, column=0, columnspan=2, sticky="w",
+            padx=16, pady=(14, 4))
+        row_idx += 1
+        ctk.CTkLabel(f, text="Weapon Images", text_color=C["text_dim"],
+                     font=ctk.CTkFont(size=12), anchor="e").grid(
+            row=row_idx, column=0, sticky="e", padx=(16, 8), pady=4)
+        self._cache_stat_lbl = ctk.CTkLabel(
+            f, text="Calculating…",
+            font=ctk.CTkFont(size=12), text_color=C["text_dim"], anchor="w")
+        self._cache_stat_lbl.grid(row=row_idx, column=1, sticky="w",
+                                   padx=(4, 16), pady=4)
+        row_idx += 1
+        ctk.CTkLabel(f, text="", anchor="e").grid(row=row_idx, column=0)
+        cache_btn_row = ctk.CTkFrame(f, fg_color="transparent")
+        cache_btn_row.grid(row=row_idx, column=1, sticky="w",
+                           padx=(4, 16), pady=(4, 12))
+        ctk.CTkButton(cache_btn_row, text="Clear Weapon Cache", width=150, height=28,
+                      fg_color=C["border"], hover_color=C["accent"],
+                      font=ctk.CTkFont(size=11), text_color=C["text"],
+                      command=self._clear_weapon_cache).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(cache_btn_row, text="Clear All Cache", width=130, height=28,
+                      fg_color=C["border"], hover_color=C["accent"],
+                      font=ctk.CTkFont(size=11), text_color=C["text"],
+                      command=self._clear_all_cache).pack(side="left")
+
+    def _refresh_cache_stats(self):
+        import glob
+        files     = glob.glob(os.path.join("cache", "wpn_*.png"))
+        count     = len(files)
+        size_mb   = sum(os.path.getsize(p) for p in files
+                        if os.path.exists(p)) / (1024 * 1024)
+        self._cache_stat_lbl.configure(
+            text=f"{count} weapon images  ({size_mb:.1f} MB)")
+
+    def _clear_weapon_cache(self):
+        import glob
+        for p in glob.glob(os.path.join("cache", "wpn_*.png")):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+        self._refresh_cache_stats()
+        self.app.log("Weapon image cache cleared.")
+
+    def _clear_all_cache(self):
+        import glob
+        for p in glob.glob(os.path.join("cache", "*")):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+        self._refresh_cache_stats()
+        self.app.log("All cache cleared.")
+
     def _save(self):
         cfg = self.app.cfg
         for key, var in self._vars.items():
@@ -3044,6 +3172,7 @@ class SettingsPage(_Page):
                 var.set(val)
             except Exception:
                 pass
+        self._refresh_cache_stats()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -3079,6 +3208,1597 @@ class ConsolePage(_Page):
         self._text.configure(state="normal")
         self._text.delete("1.0", "end")
         self._text.configure(state="disabled")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Weapons page
+# ══════════════════════════════════════════════════════════════════════════════
+class WeaponsPage(_Page):
+    """Browse weapons from weapons.json with rarity/category filters."""
+
+    CARD_W     = 255
+    IMG_H      = 130
+    COLS       = 4
+    CHUNK_SIZE = 20
+
+    # Rarity background colours for the image area
+    RARITY_BG = {
+        "common":       "#4a4a4a",
+        "uncommon":     "#265c18",
+        "rare":         "#163a6e",
+        "epic":         "#4a1a72",
+        "legendary":    "#7a4010",
+        "mythic":       "#7a6900",
+        "transcendent": "#5a0000",
+    }
+
+    CAT_DISPLAY = {
+        "assault-rifle":    "Assault Rifle",
+        "bow":              "Bow",
+        "crossbow":         "Crossbow",
+        "explosive":        "Explosive",
+        "light-machine-gun":"Light Machine Gun",
+        "melee":            "Melee",
+        "pistol":           "Pistol",
+        "shotgun":          "Shotgun",
+        "smg":              "SMG",
+        "sniper":           "Sniper",
+    }
+
+    CAT_SLUG = {v: k for k, v in CAT_DISPLAY.items()}
+
+    def __init__(self, master, app):
+        super().__init__(master, app)
+        self._loaded              = False
+        self._all_weapons:        list[dict]             = []
+        self._filtered_weapons:   list[dict]             = []
+        self._scroll_offset:      int                    = 0
+        self._img_refs:           list                   = []
+        self._grid_frame:         Optional[ctk.CTkFrame] = None
+        self._render_token:       int                    = 0
+
+        self._rarity_var = ctk.StringVar(value="All Rarities")
+        self._cat_var    = ctk.StringVar(value="All Categories")
+        self._search_var = ctk.StringVar()
+        self._search_var.trace_add("write", lambda *_: self._apply_filters())
+
+        # ── Outer tab view (Weapons / Loot Tools) ──────────────────────────────
+        self._page_tabs = ctk.CTkTabview(
+            self,
+            fg_color=C["bg"],
+            segmented_button_fg_color=C["card"],
+            segmented_button_selected_color=C["accent_btn"],
+            segmented_button_selected_hover_color=C["accent"],
+            segmented_button_unselected_hover_color=C["border"],
+            text_color=C["text"],
+            command=self._on_tab_switch,
+        )
+        self._page_tabs.pack(fill="both", expand=True)
+        self._page_tabs.add("Weapons")
+        self._page_tabs.add("Loot Tools")
+        tab_w = self._page_tabs.tab("Weapons")
+        tab_l = self._page_tabs.tab("Loot Tools")
+
+        # ── Header ─────────────────────────────────────────────────────────────
+        hdr = ctk.CTkFrame(tab_w, fg_color="transparent")
+        hdr.pack(fill="x", padx=24, pady=(20, 8))
+        ctk.CTkLabel(hdr, text="Weapons",
+                     font=ctk.CTkFont(size=22, weight="bold"),
+                     text_color=C["text"]).pack(side="left")
+        ctk.CTkButton(hdr, text="↻  Refresh", width=90, height=32,
+                      fg_color=C["card"], hover_color=C["border"],
+                      font=ctk.CTkFont(size=12), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=self._reload).pack(side="right")
+        ctk.CTkButton(hdr, text="Load All", width=90, height=32,
+                      fg_color=C["accent"], hover_color=C["accent_btn"],
+                      font=ctk.CTkFont(size=12), text_color="white",
+                      command=self._load_all_popup).pack(side="right", padx=(0, 8))
+
+        # ── Filter bar ─────────────────────────────────────────────────────────
+        fbar = ctk.CTkFrame(tab_w, fg_color="transparent")
+        fbar.pack(fill="x", padx=24, pady=(0, 8))
+
+        ctk.CTkOptionMenu(
+            fbar,
+            variable=self._rarity_var,
+            values=["All Rarities", "Common", "Uncommon", "Rare",
+                    "Epic", "Legendary", "Mythic", "Transcendent"],
+            width=140, height=32,
+            fg_color=C["card"], button_color=C["border"],
+            button_hover_color=C["accent"],
+            text_color=C["text"], font=ctk.CTkFont(size=12),
+            command=lambda _: self._apply_filters(),
+        ).pack(side="left", padx=(0, 8))
+
+        ctk.CTkOptionMenu(
+            fbar,
+            variable=self._cat_var,
+            values=["All Categories", "Assault Rifle", "Bow", "Crossbow",
+                    "Explosive", "Light Machine Gun", "Melee",
+                    "Pistol", "Shotgun", "SMG", "Sniper"],
+            width=160, height=32,
+            fg_color=C["card"], button_color=C["border"],
+            button_hover_color=C["accent"],
+            text_color=C["text"], font=ctk.CTkFont(size=12),
+            command=lambda _: self._apply_filters(),
+        ).pack(side="left", padx=(0, 8))
+
+        ctk.CTkEntry(
+            fbar, textvariable=self._search_var,
+            placeholder_text="Search weapons…",
+            width=200, height=32,
+            fg_color=C["input_bg"], border_color=C["border"],
+            font=ctk.CTkFont(size=12),
+        ).pack(side="left", padx=(0, 12))
+
+        self._count_lbl = ctk.CTkLabel(fbar, text="",
+                                        font=ctk.CTkFont(size=12),
+                                        text_color=C["text_dim"])
+        self._count_lbl.pack(side="left")
+
+        # ── Scrollable grid ─────────────────────────────────────────────────────
+        self._scroll = ctk.CTkScrollableFrame(
+            tab_w, fg_color=C["bg"], corner_radius=0,
+            scrollbar_button_color=C["border"],
+        )
+        self._scroll.pack(fill="both", expand=True, padx=24, pady=(0, 8))
+
+        _cv = self._scroll._parent_canvas
+        _cv.bind("<MouseWheel>",
+                 lambda e: self.after(80, self._check_scroll), add="+")
+        _cv.bind("<Button-4>",
+                 lambda e: self.after(80, self._check_scroll), add="+")
+        _cv.bind("<Button-5>",
+                 lambda e: self.after(80, self._check_scroll), add="+")
+
+        ctk.CTkLabel(self._scroll, text="Loading weapons…",
+                     text_color=C["text_dim"],
+                     font=ctk.CTkFont(size=13)).pack(pady=40)
+
+        # ── Loot Tools tab — embed LootToolsPage ───────────────────────────────
+        self._loot_tools = LootToolsPage(tab_l, app)
+        self._loot_tools.pack(fill="both", expand=True)
+
+    def _on_tab_switch(self):
+        if self._page_tabs.get() == "Loot Tools":
+            self._loot_tools.on_show()
+
+    # ── Lifecycle ──────────────────────────────────────────────────────────────
+
+    def on_show(self):
+        if self._page_tabs.get() == "Loot Tools":
+            self._loot_tools.on_show()
+        elif not self._loaded:
+            self._reload()
+
+    def _reload(self):
+        self._loaded = False
+        self._all_weapons.clear()
+        threading.Thread(target=self._fetch, daemon=True).start()
+
+    def _fetch(self):
+        import json as _json
+        try:
+            with open(os.path.join(JSON_DIR, "weapons.json"), "r", encoding="utf-8") as f:
+                raw = _json.load(f)
+            weapons = raw.get("data", raw) if isinstance(raw, dict) else raw
+            # Keep only weapons with a display name and known category
+            self._all_weapons = [
+                w for w in weapons
+                if w.get("displayName") and w.get("category") in self.CAT_DISPLAY
+            ]
+            self._loaded = True
+            self.after(0, self._apply_filters)
+        except FileNotFoundError:
+            self.after(0, lambda: self._show_msg(
+                "weapons.json not found in the json/ folder."))
+        except Exception as e:
+            self.after(0, lambda m=str(e): self._show_msg(f"Error loading weapons: {m}"))
+
+    # ── Filtering ──────────────────────────────────────────────────────────────
+
+    def _apply_filters(self):
+        if not self._loaded:
+            return
+        rarity = self._rarity_var.get()
+        cat    = self._cat_var.get()
+        query  = self._search_var.get().strip().lower()
+
+        filtered = []
+        for w in self._all_weapons:
+            if rarity != "All Rarities" and \
+               (w.get("rarity") or "").lower() != rarity.lower():
+                continue
+            if cat != "All Categories":
+                slug = self.CAT_SLUG.get(cat)
+                if w.get("category") != slug:
+                    continue
+            if query and query not in (w.get("displayName") or "").lower():
+                continue
+            filtered.append(w)
+
+        self._render(filtered)
+
+    # ── Rendering ──────────────────────────────────────────────────────────────
+
+    def _show_msg(self, msg: str):
+        self._clear_grid()
+        ctk.CTkLabel(self._grid_frame, text=msg,
+                     text_color=C["text_dim"],
+                     font=ctk.CTkFont(size=13)).pack(pady=40)
+
+    def _clear_grid(self):
+        # Destroy every child of the scroll frame (clears the initial
+        # "Loading weapons…" placeholder as well as any previous grid)
+        for child in self._scroll.winfo_children():
+            try:
+                child.destroy()
+            except Exception:
+                pass
+        self._grid_frame = None
+        self._img_refs.clear()
+        gf = ctk.CTkFrame(self._scroll, fg_color="transparent")
+        gf.pack(fill="both", expand=True)
+        self._grid_frame = gf
+        for c in range(self.COLS):
+            gf.columnconfigure(c, weight=1)
+        return gf
+
+    def _render(self, weapons: list):
+        self._render_token += 1
+        self._filtered_weapons = weapons
+        self._scroll_offset    = 0
+        gf = self._clear_grid()
+        self._count_lbl.configure(text=f"{len(weapons)} weapons found")
+
+        if not weapons:
+            ctk.CTkLabel(gf, text="No weapons match the current filters.",
+                         text_color=C["text_dim"],
+                         font=ctk.CTkFont(size=13)).pack(pady=40)
+            return
+
+        self._load_chunk()
+
+    def _load_chunk(self):
+        """Render the next CHUNK_SIZE cards into the grid."""
+        weapons = self._filtered_weapons
+        gf      = self._grid_frame
+        start   = self._scroll_offset
+        end     = min(start + self.CHUNK_SIZE, len(weapons))
+        if start >= len(weapons) or gf is None:
+            return
+        for idx in range(start, end):
+            w   = weapons[idx]
+            row = idx // self.COLS
+            col = idx % self.COLS
+            self._make_card(gf, w, row, col)
+        self._scroll_offset = end
+        # If the content is still shorter than the viewport, auto-load more
+        self.after(60, self._auto_fill)
+
+    def _auto_fill(self):
+        """Load another chunk if the scroll bar isn't active yet."""
+        if self._scroll_offset >= len(self._filtered_weapons):
+            return
+        try:
+            top, bottom = self._scroll._parent_canvas.yview()
+            if top == 0.0 and bottom == 1.0:
+                self._load_chunk()
+        except Exception:
+            pass
+
+    def _check_scroll(self, _event=None):
+        """Triggered by scroll events — load next chunk when near the bottom."""
+        if self._scroll_offset >= len(self._filtered_weapons):
+            return
+        try:
+            _, bottom = self._scroll._parent_canvas.yview()
+            if bottom >= 0.85:
+                self._load_chunk()
+        except Exception:
+            pass
+
+    def _load_all_popup(self):
+        """Show a confirmation dialog, then load all remaining weapons in small chunks."""
+        remaining = self._filtered_weapons[self._scroll_offset:]
+        if not remaining:
+            return
+
+        total = len(remaining)
+
+        # ── Confirmation dialog ───────────────────────────────────────────────
+        confirm = ctk.CTkToplevel(self)
+        confirm.title("Load All Weapons")
+        confirm.geometry("360x150")
+        confirm.resizable(False, False)
+        confirm.grab_set()
+        confirm.lift()
+
+        ctk.CTkLabel(confirm,
+                     text=f"Load all {total} remaining weapons?",
+                     font=ctk.CTkFont(size=13, weight="bold"),
+                     text_color=C["text"]).pack(pady=(24, 4))
+        ctk.CTkLabel(confirm,
+                     text="The app may be slow while loading.",
+                     font=ctk.CTkFont(size=11),
+                     text_color=C["text_dim"]).pack()
+
+        btn_row = ctk.CTkFrame(confirm, fg_color="transparent")
+        btn_row.pack(pady=(14, 0))
+
+        def _cancel():
+            confirm.destroy()
+
+        def _confirm():
+            confirm.grab_release()
+            confirm.destroy()
+            # Small delay so Tkinter fully processes the destroy before opening
+            # the progress popup — without this the new grab_set() can silently fail
+            self.after(100, lambda: self._run_load_all(remaining))
+
+        ctk.CTkButton(btn_row, text="Yes, Load All", width=120, height=32,
+                      fg_color=C["accent"], hover_color=C["accent_btn"],
+                      font=ctk.CTkFont(size=12), text_color="white",
+                      command=_confirm).pack(side="left", padx=6)
+        ctk.CTkButton(btn_row, text="Cancel", width=80, height=32,
+                      fg_color=C["card"], hover_color=C["border"],
+                      font=ctk.CTkFont(size=12), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=_cancel).pack(side="left", padx=6)
+
+    def _run_load_all(self, remaining: list):
+        """Open a progress popup and render remaining weapons in small chunks."""
+        gf           = self._grid_frame
+        token        = self._render_token
+        already_done = self._scroll_offset
+        total        = len(remaining)
+
+        popup = ctk.CTkToplevel(self)
+        popup.title("Loading All Weapons")
+        popup.geometry("420x185")
+        popup.resizable(False, False)
+        popup.grab_set()
+        popup.lift()
+
+        ctk.CTkLabel(popup,
+                     text=f"Loading {total} weapons…",
+                     font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=C["text"]).pack(pady=(22, 6))
+
+        bar = ctk.CTkProgressBar(popup, width=360)
+        bar.pack(pady=4)
+        bar.set(0)
+
+        status_lbl = ctk.CTkLabel(popup,
+                                   text=f"0 / {total}",
+                                   font=ctk.CTkFont(size=12),
+                                   text_color=C["text_dim"])
+        status_lbl.pack(pady=(2, 0))
+
+        eta_lbl = ctk.CTkLabel(popup,
+                               text="Estimated time remaining: —",
+                               font=ctk.CTkFont(size=11),
+                               text_color=C["text_dim"])
+        eta_lbl.pack()
+
+        # 15 cards per tick, 35ms pause keeps UI responsive
+        BATCH = 15
+        DELAY = 35  # ms between batches
+
+        _start_time = [None]   # mutable container so inner func can write to it
+
+        def _fmt_eta(seconds: float) -> str:
+            seconds = max(0, int(seconds))
+            if seconds < 60:
+                return f"{seconds}s"
+            return f"{seconds // 60}m {seconds % 60}s"
+
+        def _batch(start: int):
+            if token != self._render_token:
+                try:
+                    popup.destroy()
+                except Exception:
+                    pass
+                return
+
+            if _start_time[0] is None:
+                _start_time[0] = time.time()
+
+            end = min(start + BATCH, total)
+            for i in range(start, end):
+                w       = remaining[i]
+                abs_idx = already_done + i
+                row     = abs_idx // self.COLS
+                col     = abs_idx % self.COLS
+                self._make_card(gf, w, row, col)
+            self._scroll_offset = already_done + end
+            bar.set(end / total)
+            status_lbl.configure(text=f"{end} / {total}")
+
+            # ETA based on elapsed time and remaining work
+            elapsed   = time.time() - _start_time[0]
+            remaining_count = total - end
+            if end > 0 and elapsed > 0:
+                rate = end / elapsed          # cards per second
+                eta  = remaining_count / rate
+                eta_lbl.configure(text=f"Estimated time remaining: {_fmt_eta(eta)}")
+
+            if end < total:
+                popup.after(DELAY, lambda: _batch(end))
+            else:
+                eta_lbl.configure(text="Done!")
+                popup.after(700, popup.destroy)
+
+        popup.after(80, lambda: _batch(0))
+
+    # ── Card builder ───────────────────────────────────────────────────────────
+
+    def _make_card(self, parent: ctk.CTkFrame, weapon: dict, row: int, col: int):
+        rarity   = (weapon.get("rarity") or "common").lower()
+        img_bg   = self.RARITY_BG.get(rarity, "#404040")
+        rar_col  = RARITY_COLORS.get(rarity, C["text_dim"])
+        stats    = weapon.get("stats") or {}
+        wid      = weapon.get("id", "")
+        cat_slug = weapon.get("category") or ""
+        cat_lbl  = self.CAT_DISPLAY.get(cat_slug, "")
+
+        # ── Outer card ─────────────────────────────────────────────────────────
+        card = ctk.CTkFrame(parent, width=self.CARD_W,
+                            corner_radius=8, fg_color=C["card"],
+                            border_width=1, border_color=C["border"])
+        card.grid(row=row, column=col, padx=8, pady=8, sticky="nsew")
+
+        # ── Image area ─────────────────────────────────────────────────────────
+        img_frame = ctk.CTkFrame(card, height=self.IMG_H, corner_radius=6,
+                                  fg_color=img_bg)
+        img_frame.pack(fill="x", padx=4, pady=(4, 0))
+        img_frame.pack_propagate(False)
+
+        # (category badge rendered below in the info area to avoid image-frame clipping)
+
+        # (rarity badge rendered below in the info area to avoid image-frame clipping)
+
+        # Image placeholder — filled lazily
+        img_lbl = ctk.CTkLabel(img_frame, text="", fg_color="transparent",
+                               width=self.IMG_H - 10, height=self.IMG_H - 10)
+        img_lbl.place(relx=0.5, rely=0.5, anchor="center")
+
+        icon_url = (weapon.get("images") or {}).get("icon", "")
+        if icon_url:
+            threading.Thread(
+                target=self._load_img,
+                args=(icon_url, img_lbl, wid, self.IMG_H - 20),
+                daemon=True,
+            ).start()
+
+        # ── Info area ──────────────────────────────────────────────────────────
+        info = ctk.CTkFrame(card, fg_color="transparent")
+        info.pack(fill="x", padx=10, pady=(6, 8))
+
+        # Name
+        ctk.CTkLabel(info,
+                     text=weapon.get("displayName", "Unknown"),
+                     font=ctk.CTkFont(size=12, weight="bold"),
+                     text_color=C["text"],
+                     anchor="w", justify="left").pack(anchor="w")
+
+        # Badges row — category + rarity sit below the name, never on the image
+        badges_row = ctk.CTkFrame(info, fg_color="transparent")
+        badges_row.pack(fill="x", pady=(2, 0))
+        if cat_lbl:
+            ctk.CTkLabel(badges_row, text=f" {cat_lbl} ",
+                         font=ctk.CTkFont(size=9), text_color="white",
+                         fg_color="#2a2a2a", corner_radius=4,
+                         ).pack(side="left", padx=(0, 4))
+        ctk.CTkLabel(badges_row, text=f" {rarity.capitalize()} ",
+                     font=ctk.CTkFont(size=9), text_color=rar_col,
+                     fg_color="#2a2a2a", corner_radius=4,
+                     ).pack(side="left")
+
+        # Stats row 1: DMG + Fire Rate
+        s1 = ctk.CTkFrame(info, fg_color="transparent")
+        s1.pack(fill="x", pady=(3, 0))
+        dmg  = int(stats.get("damagePerBullet") or 0)
+        fr   = stats.get("firingRate") or 0
+        ctk.CTkLabel(s1, text=f"DMG: {dmg}",
+                     font=ctk.CTkFont(size=10), text_color=C["text_dim"],
+                     anchor="w").pack(side="left", expand=True, fill="x")
+        ctk.CTkLabel(s1, text=f"Fire Rate: {fr}",
+                     font=ctk.CTkFont(size=10), text_color=C["text_dim"],
+                     anchor="w").pack(side="left", expand=True, fill="x")
+
+        # Stats row 2: Reload + Mag
+        s2 = ctk.CTkFrame(info, fg_color="transparent")
+        s2.pack(fill="x")
+        reload_t = stats.get("reloadTime") or 0
+        mag      = int(stats.get("clipSize") or 0)
+        ctk.CTkLabel(s2, text=f"Reload: {round(reload_t, 2)}s",
+                     font=ctk.CTkFont(size=10), text_color=C["text_dim"],
+                     anchor="w").pack(side="left", expand=True, fill="x")
+        ctk.CTkLabel(s2, text=f"Mag: {mag}",
+                     font=ctk.CTkFont(size=10), text_color=C["text_dim"],
+                     anchor="w").pack(side="left", expand=True, fill="x")
+
+        # Ammo type
+        ammo = weapon.get("ammoType")
+        if ammo:
+            ctk.CTkLabel(info,
+                         text=ammo.replace("-", " ").title() + " Ammo",
+                         font=ctk.CTkFont(size=10), text_color=C["text_dim"],
+                         anchor="w").pack(anchor="w", pady=(2, 0))
+
+        # Divider
+        ctk.CTkFrame(info, height=1, fg_color=C["border"]).pack(
+            fill="x", pady=(6, 4))
+
+        # ID row
+        id_row = ctk.CTkFrame(info, fg_color="transparent")
+        id_row.pack(fill="x")
+        # Truncate long IDs so they never wrap and push Copy off-row
+        _disp_id = wid if len(wid) <= 22 else wid[:21] + "…"
+        ctk.CTkLabel(id_row, text=_disp_id,
+                     font=_mono_font(9), text_color=C["text_dim"],
+                     anchor="w", justify="left").pack(
+            side="left", expand=True, fill="x")
+        ctk.CTkButton(id_row, text="Copy ID", width=62, height=22,
+                      fg_color=C["border"], hover_color=C["accent"],
+                      font=ctk.CTkFont(size=9), text_color=C["text_dim"],
+                      command=lambda k=wid: self._copy_id(k),
+                      ).pack(side="right")
+
+    # ── Image loading ──────────────────────────────────────────────────────────
+
+    def _load_img(self, url: str, lbl: ctk.CTkLabel, wid: str, size: int):
+        try:
+            cache_path = os.path.join("cache", f"wpn_{wid}.png")
+            if os.path.exists(cache_path):
+                pil = PILImage.open(cache_path).convert("RGBA")
+            else:
+                r = requests.get(url, timeout=10)
+                r.raise_for_status()
+                pil = PILImage.open(io.BytesIO(r.content)).convert("RGBA")
+                os.makedirs("cache", exist_ok=True)
+                pil.save(cache_path)
+            pil    = pil.resize((size, size), PILImage.LANCZOS)
+            ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil, size=(size, size))
+            self._img_refs.append(ctkimg)
+            self.after(0, lambda l=lbl, i=ctkimg: l.configure(image=i))
+        except Exception:
+            pass
+
+    # ── Helpers ────────────────────────────────────────────────────────────────
+
+    def _copy_id(self, wid: str):
+        try:
+            self.clipboard_clear()
+            self.clipboard_append(wid)
+            self.update()
+        except Exception:
+            pass
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Merger page
+# ══════════════════════════════════════════════════════════════════════════════
+class MergerPage(_Page):
+    """FModel-style image picker: select PNGs, adjust layout, preview and merge."""
+
+    THUMB_SIZE = 80
+    THUMB_COLS = 6
+    THUMB_PAD  = 4
+
+    def __init__(self, master, app):
+        super().__init__(master, app)
+
+        self._loaded         = False
+        self._folder         = "icons"
+        self._all_files:     list[str]                   = []
+        self._selected:      set[str]                    = set()
+        self._thumb_refs:    list                        = []
+        self._thumb_labels:  dict[str, ctk.CTkLabel]    = {}
+        self._grid_frame:    Optional[ctk.CTkFrame]      = None
+        self._preview_ref    = None
+
+        self._cols_var       = ctk.IntVar(value=6)
+        self._scale_var      = ctk.IntVar(value=100)
+        self._bg_var         = ctk.StringVar(value="Dark")
+        self._watermark_path: Optional[str] = None
+
+        # ── Header ─────────────────────────────────────────────────────────────
+        hdr = ctk.CTkFrame(self, fg_color="transparent")
+        hdr.pack(fill="x", padx=24, pady=(20, 4))
+
+        ctk.CTkLabel(hdr, text="Merger",
+                     font=ctk.CTkFont(size=22, weight="bold"),
+                     text_color=C["text"]).pack(side="left")
+
+        self._folder_lbl = ctk.CTkLabel(hdr, text=self._folder,
+                                         font=ctk.CTkFont(size=12),
+                                         text_color=C["text_dim"])
+        self._folder_lbl.pack(side="left", padx=(12, 0))
+
+        ctk.CTkButton(hdr, text="Open Folder", width=110, height=32,
+                      fg_color=C["card"], hover_color=C["border"],
+                      font=ctk.CTkFont(size=12), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=self._open_folder).pack(side="right")
+
+        # ── Toolbar ────────────────────────────────────────────────────────────
+        bar = ctk.CTkFrame(self, fg_color="transparent")
+        bar.pack(fill="x", padx=24, pady=(0, 6))
+
+        ctk.CTkButton(bar, text="Select All", width=90, height=28,
+                      fg_color=C["card"], hover_color=C["border"],
+                      font=ctk.CTkFont(size=12), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=self._select_all).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(bar, text="Deselect All", width=100, height=28,
+                      fg_color=C["card"], hover_color=C["border"],
+                      font=ctk.CTkFont(size=12), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=self._deselect_all).pack(side="left")
+
+        self._count_lbl = ctk.CTkLabel(bar, text="0 selected",
+                                        font=ctk.CTkFont(size=12),
+                                        text_color=C["text_dim"])
+        self._count_lbl.pack(side="left", padx=12)
+
+        ctk.CTkButton(bar, text="Add Watermark", width=120, height=28,
+                      fg_color=C["card"], hover_color=C["border"],
+                      font=ctk.CTkFont(size=12), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=self._pick_watermark).pack(side="left", padx=(0, 6))
+        self._wm_lbl = ctk.CTkLabel(bar, text="No watermark",
+                                     font=ctk.CTkFont(size=11),
+                                     text_color=C["text_dim"])
+        self._wm_lbl.pack(side="left")
+
+        # ── Bottom controls bar ─────────────────────────────────────────────────
+        # Pack BEFORE scroll so scroll fills all remaining vertical space
+        self._ctrl_bar = ctk.CTkFrame(self, fg_color=C["sidebar"], corner_radius=0)
+        self._ctrl_bar.pack(side="bottom", fill="x")
+
+        ctrl_inner = ctk.CTkFrame(self._ctrl_bar, fg_color="transparent")
+        ctrl_inner.pack(fill="x", padx=16, pady=(10, 6))
+
+        # Columns slider
+        ctk.CTkLabel(ctrl_inner, text="Columns:",
+                     font=ctk.CTkFont(size=12),
+                     text_color=C["text"]).pack(side="left")
+        self._cols_val_lbl = ctk.CTkLabel(ctrl_inner, text="6", width=28,
+                                           font=ctk.CTkFont(size=12),
+                                           text_color=C["text"])
+        ctk.CTkSlider(ctrl_inner, from_=1, to=12, number_of_steps=11,
+                      variable=self._cols_var, width=120,
+                      command=lambda v: self._cols_val_lbl.configure(
+                          text=str(int(v)))).pack(side="left", padx=(6, 2))
+        self._cols_val_lbl.pack(side="left", padx=(0, 16))
+
+        # Scale slider
+        ctk.CTkLabel(ctrl_inner, text="Scale:",
+                     font=ctk.CTkFont(size=12),
+                     text_color=C["text"]).pack(side="left")
+        self._scale_val_lbl = ctk.CTkLabel(ctrl_inner, text="100%", width=40,
+                                            font=ctk.CTkFont(size=12),
+                                            text_color=C["text"])
+        ctk.CTkSlider(ctrl_inner, from_=25, to=200, number_of_steps=35,
+                      variable=self._scale_var, width=120,
+                      command=lambda v: self._scale_val_lbl.configure(
+                          text=f"{int(v)}%")).pack(side="left", padx=(6, 2))
+        self._scale_val_lbl.pack(side="left", padx=(0, 16))
+
+        # Background toggle
+        ctk.CTkLabel(ctrl_inner, text="Bg:",
+                     font=ctk.CTkFont(size=12),
+                     text_color=C["text"]).pack(side="left")
+        ctk.CTkSegmentedButton(ctrl_inner, values=["Dark", "Light"],
+                                variable=self._bg_var,
+                                font=ctk.CTkFont(size=12),
+                                width=120).pack(side="left", padx=(6, 16))
+
+        # Action buttons
+        ctk.CTkButton(ctrl_inner, text="Preview", width=90, height=32,
+                      fg_color=C["card"], hover_color=C["border"],
+                      font=ctk.CTkFont(size=12), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=self._do_preview).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(ctrl_inner, text="Merge & Save", width=110, height=32,
+                      fg_color=C["accent_btn"], hover_color=C["accent"],
+                      font=ctk.CTkFont(size=12, weight="bold"),
+                      text_color=C["text"],
+                      command=self._do_merge).pack(side="left")
+
+        self._status_lbl = ctk.CTkLabel(ctrl_inner, text="",
+                                         font=ctk.CTkFont(size=11),
+                                         text_color=C["text_dim"])
+        self._status_lbl.pack(side="left", padx=12)
+
+        # Result row — hidden until first preview/merge
+        self._result_row = ctk.CTkFrame(self._ctrl_bar, fg_color="transparent")
+        self._preview_lbl = ctk.CTkLabel(self._result_row, text="")
+        self._preview_lbl.pack(side="left", padx=16, pady=(0, 10))
+        self._result_btns = ctk.CTkFrame(self._result_row, fg_color="transparent")
+        self._result_btns.pack(side="left", padx=4, pady=(0, 10))
+
+        # ── Scrollable thumbnail grid ───────────────────────────────────────────
+        self._scroll = ctk.CTkScrollableFrame(
+            self, fg_color=C["bg"], corner_radius=0,
+            scrollbar_button_color=C["border"],
+        )
+        self._scroll.pack(fill="both", expand=True, padx=24, pady=(0, 4))
+
+    # ── Lifecycle ──────────────────────────────────────────────────────────────
+
+    def on_show(self):
+        if not self._loaded:
+            self._load_folder(self._folder)
+
+    # ── Folder management ──────────────────────────────────────────────────────
+
+    def _open_folder(self):
+        from tkinter import filedialog
+        path = filedialog.askdirectory(initialdir=self._folder)
+        if path:
+            self._folder = path
+            self._folder_lbl.configure(text=os.path.basename(path) or path)
+            self._load_folder(path)
+
+    def _pick_watermark(self):
+        from tkinter import filedialog
+        path = filedialog.askopenfilename(
+            title="Select watermark image",
+            filetypes=[("Image files", "*.png *.jpg *.jpeg *.webp"), ("All files", "*.*")],
+        )
+        if path:
+            self._watermark_path = path
+            self._wm_lbl.configure(
+                text=os.path.basename(path), text_color=C["text"])
+        else:
+            self._watermark_path = None
+            self._wm_lbl.configure(text="No watermark", text_color=C["text_dim"])
+
+    def _load_folder(self, path: str):
+        import glob
+        self._all_files = sorted(glob.glob(os.path.join(path, "*.png")))
+        self._selected.clear()
+        self._update_count()
+        self._build_grid()
+        self._loaded = True
+
+    # ── Thumbnail grid ─────────────────────────────────────────────────────────
+
+    def _build_grid(self):
+        if self._grid_frame is not None:
+            try:
+                self._grid_frame.destroy()
+            except Exception:
+                pass
+        self._thumb_refs.clear()
+        self._thumb_labels.clear()
+
+        gf = ctk.CTkFrame(self._scroll, fg_color="transparent")
+        gf.pack(fill="both", expand=True)
+        self._grid_frame = gf
+
+        if not self._all_files:
+            ctk.CTkLabel(gf, text="No PNG files found in this folder.",
+                         text_color=C["text_dim"],
+                         font=ctk.CTkFont(size=13)).pack(pady=40)
+            return
+
+        for idx, path in enumerate(self._all_files):
+            row_idx = idx // self.THUMB_COLS
+            col_idx = idx % self.THUMB_COLS
+
+            # CTkFrame wrapper — supports border_width/border_color for selection highlight
+            frame = ctk.CTkFrame(
+                gf,
+                width=self.THUMB_SIZE, height=self.THUMB_SIZE,
+                fg_color=C["card"], corner_radius=4,
+                border_width=0, border_color="white",
+            )
+            frame.grid(row=row_idx, column=col_idx,
+                       padx=self.THUMB_PAD, pady=self.THUMB_PAD)
+            frame.grid_propagate(False)
+            frame.configure(cursor="hand2")
+            frame.bind("<Button-1>", lambda e, p=path: self._toggle(p))
+
+            lbl = ctk.CTkLabel(
+                frame, text="…",
+                width=self.THUMB_SIZE, height=self.THUMB_SIZE,
+                fg_color="transparent",
+                font=ctk.CTkFont(size=10), text_color=C["text_dim"],
+            )
+            lbl.place(relx=0.5, rely=0.5, anchor="center")
+            lbl.configure(cursor="hand2")
+            lbl.bind("<Button-1>", lambda e, p=path: self._toggle(p))
+
+            self._thumb_labels[path] = frame   # store frame for border control
+            threading.Thread(
+                target=self._load_thumb, args=(path, lbl), daemon=True
+            ).start()
+
+    def _load_thumb(self, path: str, lbl: ctk.CTkLabel):
+        try:
+            pil = PILImage.open(path).convert("RGB")
+            pil = pil.resize((self.THUMB_SIZE, self.THUMB_SIZE), PILImage.LANCZOS)
+            ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil,
+                                   size=(self.THUMB_SIZE, self.THUMB_SIZE))
+            self._thumb_refs.append(ctkimg)
+            self.after(0, lambda l=lbl, i=ctkimg: l.configure(image=i, text=""))
+        except Exception:
+            pass
+
+    # ── Selection ──────────────────────────────────────────────────────────────
+
+    def _toggle(self, path: str):
+        if path in self._selected:
+            self._selected.discard(path)
+        else:
+            self._selected.add(path)
+        self._set_border(path)
+        self._update_count()
+
+    def _set_border(self, path: str):
+        frame = self._thumb_labels.get(path)
+        if frame:
+            if path in self._selected:
+                frame.configure(border_width=2, border_color="white")
+            else:
+                frame.configure(border_width=0)
+
+    def _select_all(self):
+        self._selected = set(self._all_files)
+        for p in self._all_files:
+            self._set_border(p)
+        self._update_count()
+
+    def _deselect_all(self):
+        self._selected.clear()
+        for p in self._all_files:
+            self._set_border(p)
+        self._update_count()
+
+    def _update_count(self):
+        self._count_lbl.configure(text=f"{len(self._selected)} selected")
+
+    # ── Merge / Preview ────────────────────────────────────────────────────────
+
+    def _get_bg_color(self) -> tuple:
+        return (30, 30, 30) if self._bg_var.get() == "Dark" else (240, 240, 240)
+
+    def _do_preview(self):
+        if not self._selected:
+            self._status_lbl.configure(text="Select at least one image first.")
+            return
+        self._status_lbl.configure(text="Generating preview…")
+        cols  = self._cols_var.get()
+        scale = self._scale_var.get() / 100.0
+        bg    = self._get_bg_color()
+        files = sorted(self._selected)
+        wm    = self._watermark_path or ""
+        threading.Thread(
+            target=self._run_preview, args=(files, cols, scale, bg, wm), daemon=True
+        ).start()
+
+    def _run_preview(self, files, cols, scale, bg, wm=""):
+        try:
+            from ALmodules.merger import merge_files
+            os.makedirs("merged", exist_ok=True)
+            tmp = os.path.join("merged", "_preview_tmp.jpg")
+            merge_files(files, tmp, cols=cols, bg_color=bg, card_scale=scale,
+                        watermark_path=wm)
+            self.after(0, lambda: self._show_preview(tmp, save_path=None))
+        except Exception as e:
+            self.after(0, lambda m=str(e): self._status_lbl.configure(
+                text=f"Error: {m}"))
+
+    def _do_merge(self):
+        if not self._selected:
+            self._status_lbl.configure(text="Select at least one image first.")
+            return
+        self._status_lbl.configure(text="Merging…")
+        cols  = self._cols_var.get()
+        scale = self._scale_var.get() / 100.0
+        bg    = self._get_bg_color()
+        files = sorted(self._selected)
+        wm    = self._watermark_path or ""
+        ts    = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out   = os.path.join("merged", f"custom_merge_{ts}.jpg")
+        threading.Thread(
+            target=self._run_merge, args=(files, cols, scale, bg, wm, out), daemon=True
+        ).start()
+
+    def _run_merge(self, files, cols, scale, bg, wm, out):
+        try:
+            from ALmodules.merger import merge_files
+            merge_files(files, out, cols=cols, bg_color=bg, card_scale=scale,
+                        watermark_path=wm)
+            self.after(0, lambda p=out: self._show_preview(p, save_path=p))
+        except Exception as e:
+            self.after(0, lambda m=str(e): self._status_lbl.configure(
+                text=f"Error: {m}"))
+
+    def _show_preview(self, img_path: str, save_path: Optional[str]):
+        try:
+            pil = PILImage.open(img_path).convert("RGB")
+            # Fit preview to max 600×200 px
+            max_w, max_h = 600, 200
+            ratio = min(max_w / pil.width, max_h / pil.height, 1.0)
+            if ratio < 1.0:
+                pil = pil.resize(
+                    (int(pil.width * ratio), int(pil.height * ratio)),
+                    PILImage.LANCZOS,
+                )
+            ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil,
+                                   size=(pil.width, pil.height))
+            self._preview_ref = ctkimg
+            self._preview_lbl.configure(image=ctkimg, text="")
+
+            # Rebuild result buttons
+            for w in self._result_btns.winfo_children():
+                w.destroy()
+
+            if save_path:
+                self._status_lbl.configure(
+                    text=f"Saved: {os.path.basename(save_path)}")
+                ctk.CTkButton(
+                    self._result_btns, text="Open", width=70, height=28,
+                    fg_color=C["card"], hover_color=C["border"],
+                    font=ctk.CTkFont(size=12), text_color=C["text"],
+                    border_width=1, border_color=C["border"],
+                    command=lambda p=save_path: open_file(p),
+                ).pack(side="left", padx=(0, 6))
+                ctk.CTkButton(
+                    self._result_btns, text="Copy", width=70, height=28,
+                    fg_color=C["card"], hover_color=C["border"],
+                    font=ctk.CTkFont(size=12), text_color=C["text"],
+                    border_width=1, border_color=C["border"],
+                    command=lambda p=save_path: self._copy_image(p),
+                ).pack(side="left")
+            else:
+                self._status_lbl.configure(text="Preview ready.")
+
+            # Show result row the first time
+            self._result_row.pack(fill="x", padx=0, pady=0)
+
+        except Exception as e:
+            self._status_lbl.configure(text=f"Preview error: {e}")
+
+    def _copy_image(self, path: str):
+        try:
+            if sys.platform == "darwin":
+                subprocess.run(
+                    ["osascript", "-e",
+                     f'set the clipboard to (read (POSIX file '
+                     f'"{os.path.abspath(path)}") as JPEG picture)'],
+                    check=True,
+                )
+            elif sys.platform == "win32":
+                try:
+                    import win32clipboard, win32con
+                    with PILImage.open(path) as img:
+                        output = io.BytesIO()
+                        img.convert("RGB").save(output, "BMP")
+                        data = output.getvalue()[14:]
+                    win32clipboard.OpenClipboard()
+                    win32clipboard.EmptyClipboard()
+                    win32clipboard.SetClipboardData(win32con.CF_DIB, data)
+                    win32clipboard.CloseClipboard()
+                except ImportError:
+                    pass
+        except Exception as e:
+            self.app.log(f"Copy failed: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Loot Tools  (Loot Simulator + Random Loadout combined)
+# ══════════════════════════════════════════════════════════════════════════════
+class LootToolsPage(_Page):
+    """Combined Loot Simulator + Random Loadout page (single tab in nav)."""
+
+    # ── Loot Sim constants ──────────────────────────────────────────────────
+    SIM_RARITIES = ["common", "uncommon", "rare", "epic", "legendary"]
+    RESULT_COLS  = 5
+    RESULT_IMG_H = 80
+
+    # ── Loadout constants ───────────────────────────────────────────────────
+    SLOTS = [
+        ("Assault Rifle",   ["assault-rifle"]),
+        ("Shotgun",         ["shotgun"]),
+        ("SMG / Pistol",    ["smg", "pistol"]),
+        ("Sniper / Explo.", ["sniper", "explosive"]),
+        ("Wild Card",       None),
+    ]
+    LOADOUT_WEIGHTS = {"common": 20, "uncommon": 25, "rare": 30, "epic": 15, "legendary": 10}
+    SLOT_IMG_H = 130
+
+    def __init__(self, master, app):
+        super().__init__(master, app)
+
+        # Shared weapon data
+        self._all_weapons:    list[dict] = []
+        self._weapons_loaded  = False
+        self._weapons_loading = False
+
+        # Loot sim state
+        self._sim_results:  list[dict]              = []
+        self._weight_vars:  dict[str, ctk.IntVar]   = {}
+        self._weight_lbls:  dict[str, ctk.CTkLabel] = {}
+        self._result_refs:  list                    = []
+
+        # Loadout state
+        self._loadout:        list[Optional[dict]]          = [None] * 5
+        self._slot_img_lbls:  list[Optional[ctk.CTkLabel]]  = [None] * 5
+        self._slot_name_lbls: list[Optional[ctk.CTkLabel]]  = [None] * 5
+        self._slot_rar_lbls:  list[Optional[ctk.CTkLabel]]  = [None] * 5
+        self._slot_stat_lbls: list[Optional[ctk.CTkLabel]]  = [None] * 5
+        self._slot_img_fms:   list[Optional[ctk.CTkFrame]]  = [None] * 5
+        self._slot_img_refs:  list                          = []
+
+        # ── Tab view ────────────────────────────────────────────────────────
+        self._tabs = ctk.CTkTabview(
+            self,
+            fg_color=C["bg"],
+            segmented_button_fg_color=C["card"],
+            segmented_button_selected_color=C["accent_btn"],
+            segmented_button_selected_hover_color=C["accent"],
+            segmented_button_unselected_hover_color=C["border"],
+            text_color=C["text"],
+            text_color_disabled=C["text_dim"],
+        )
+        self._tabs.pack(fill="both", expand=True, padx=0, pady=0)
+        self._tabs.add("Loot Simulator")
+        self._tabs.add("Random Loadout")
+
+        self._build_loot_sim(self._tabs.tab("Loot Simulator"))
+        self._build_loadout(self._tabs.tab("Random Loadout"))
+
+    # ── Lifecycle ─────────────────────────────────────────────────────────
+    def on_show(self):
+        if not self._weapons_loaded and not self._weapons_loading:
+            self._weapons_loading = True
+            threading.Thread(target=self._fetch_weapons, daemon=True).start()
+
+    def _fetch_weapons(self):
+        try:
+            with open(os.path.join(JSON_DIR, "weapons.json"), "r", encoding="utf-8") as f:
+                raw = json.load(f)
+            weapons = raw.get("data", raw) if isinstance(raw, dict) else raw
+            self._all_weapons = [
+                w for w in weapons
+                if w.get("displayName") and w.get("category")
+            ]
+            self._weapons_loaded  = True
+            self._weapons_loading = False
+            self.after(0, self._on_weapons_ready)
+        except Exception as e:
+            self._weapons_loading = False
+            self.after(0, lambda: self._result_lbl.configure(
+                text=f"Could not load weapons.json: {e}"))
+
+    def _on_weapons_ready(self):
+        self._roll_all()  # auto-roll loadout on first open
+
+    # ══════════════════════════════════════════════════════════════════════
+    # LOOT SIMULATOR
+    # ══════════════════════════════════════════════════════════════════════
+    def _build_loot_sim(self, parent):
+        from ALmodules.loot_sim import CONTAINER_PRESETS, CONTAINER_NAMES
+
+        # ── Controls card ─────────────────────────────────────────────────
+        ctrl = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=8)
+        ctrl.pack(fill="x", padx=16, pady=(12, 6))
+
+        # Row 1: container + drops + simulate button
+        r1 = ctk.CTkFrame(ctrl, fg_color="transparent")
+        r1.pack(fill="x", padx=12, pady=(10, 6))
+
+        ctk.CTkLabel(r1, text="Container:",
+                     font=ctk.CTkFont(size=12),
+                     text_color=C["text_dim"]).pack(side="left", padx=(0, 6))
+        self._container_var = ctk.StringVar(value="Floor Loot")
+        ctk.CTkOptionMenu(
+            r1, values=CONTAINER_NAMES,
+            variable=self._container_var,
+            width=160, fg_color=C["input_bg"],
+            button_color=C["border"], button_hover_color=C["accent"],
+            text_color=C["text"], font=ctk.CTkFont(size=12),
+            command=self._set_preset,
+        ).pack(side="left", padx=(0, 20))
+
+        ctk.CTkLabel(r1, text="Drops:",
+                     font=ctk.CTkFont(size=12),
+                     text_color=C["text_dim"]).pack(side="left", padx=(0, 6))
+        self._drops_var = ctk.IntVar(value=10)
+        self._drops_lbl = ctk.CTkLabel(r1, text="10", width=28,
+                                        font=ctk.CTkFont(size=13, weight="bold"),
+                                        text_color=C["text"])
+        ctk.CTkSlider(
+            r1, from_=1, to=50, variable=self._drops_var,
+            number_of_steps=49, width=180, progress_color=C["accent"],
+            command=lambda v: self._drops_lbl.configure(text=str(int(v))),
+        ).pack(side="left", padx=(0, 4))
+        self._drops_lbl.pack(side="left", padx=(0, 16))
+
+        ctk.CTkButton(
+            r1, text="🎲  Simulate!", width=130, height=36,
+            fg_color=C["accent"], hover_color=C["accent_btn"],
+            font=ctk.CTkFont(size=13, weight="bold"), text_color="white",
+            command=self._simulate,
+        ).pack(side="left")
+
+        # Row 2: rarity weight sliders
+        r2_wrap = ctk.CTkFrame(ctrl, fg_color="transparent")
+        r2_wrap.pack(fill="x", padx=12, pady=(0, 10))
+        ctk.CTkLabel(r2_wrap, text="Rarity weights  (higher = more likely to drop)",
+                     font=ctk.CTkFont(size=10),
+                     text_color=C["text_dim"]).pack(anchor="w", pady=(0, 4))
+        r2 = ctk.CTkFrame(r2_wrap, fg_color="transparent")
+        r2.pack(fill="x")
+
+        _default_w = CONTAINER_PRESETS["Floor Loot"]
+        for rar in self.SIM_RARITIES:
+            rar_col = RARITY_COLORS.get(rar, C["text_dim"])
+            col_f = ctk.CTkFrame(r2, fg_color="transparent")
+            col_f.pack(side="left", expand=True, fill="x", padx=4)
+            ctk.CTkLabel(col_f, text=rar.capitalize(),
+                         font=ctk.CTkFont(size=10), text_color=rar_col).pack()
+            var = ctk.IntVar(value=_default_w.get(rar, 0))
+            self._weight_vars[rar] = var
+            ctk.CTkSlider(
+                col_f, from_=0, to=100, variable=var,
+                progress_color=rar_col, button_color=rar_col,
+                command=lambda v, r=rar: self._on_weight_change(r),
+            ).pack(fill="x")
+            val_lbl = ctk.CTkLabel(col_f, text=str(var.get()),
+                                    font=ctk.CTkFont(size=10),
+                                    text_color=C["text_dim"])
+            val_lbl.pack()
+            self._weight_lbls[rar] = val_lbl
+
+        # ── Export bar (always visible) ────────────────────────────────────
+        export_bar = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=8)
+        export_bar.pack(fill="x", padx=16, pady=(0, 6))
+        self._result_lbl = ctk.CTkLabel(
+            export_bar, text="Pick a container and hit  🎲 Simulate!",
+            font=ctk.CTkFont(size=12), text_color=C["text_dim"])
+        self._result_lbl.pack(side="left", padx=(12, 8), pady=8)
+        ctk.CTkButton(export_bar, text="Export Image", width=110, height=28,
+                      fg_color=C["border"], hover_color=C["accent"],
+                      font=ctk.CTkFont(size=11), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=self._export_image).pack(side="left", padx=(0, 6), pady=8)
+        ctk.CTkButton(export_bar, text="Export CSV", width=90, height=28,
+                      fg_color=C["border"], hover_color=C["accent"],
+                      font=ctk.CTkFont(size=11), text_color=C["text"],
+                      border_width=1, border_color=C["border"],
+                      command=self._export_csv).pack(side="left", pady=8)
+        self._open_btn = ctk.CTkButton(
+            export_bar, text="Open", width=60, height=28,
+            fg_color=C["green"], hover_color="#1e7a35",
+            font=ctk.CTkFont(size=11), text_color="white")
+
+        # ── Result scrollable grid ─────────────────────────────────────────
+        self._result_scroll = ctk.CTkScrollableFrame(
+            parent, fg_color=C["bg"], corner_radius=0,
+            scrollbar_button_color=C["border"])
+        self._result_scroll.pack(fill="both", expand=True, padx=16, pady=(0, 8))
+        for c in range(self.RESULT_COLS):
+            self._result_scroll.grid_columnconfigure(c, weight=1)
+
+        ctk.CTkLabel(self._result_scroll,
+                     text="Results will appear here after you simulate.",
+                     text_color=C["text_dim"],
+                     font=ctk.CTkFont(size=13)).pack(pady=40)
+
+    # ── Loot Sim: weight helpers ──────────────────────────────────────────
+    def _set_preset(self, name: str):
+        from ALmodules.loot_sim import CONTAINER_PRESETS
+        weights = CONTAINER_PRESETS.get(name, {})
+        for rar, var in self._weight_vars.items():
+            v = weights.get(rar, 0)
+            var.set(v)
+            self._weight_lbls[rar].configure(text=str(v))
+
+    def _on_weight_change(self, rar: str):
+        self._weight_lbls[rar].configure(text=str(int(self._weight_vars[rar].get())))
+
+    # ── Loot Sim: simulation ──────────────────────────────────────────────
+    def _simulate(self):
+        self._result_lbl.configure(text="Simulating…")
+        threading.Thread(target=self._run_simulate, daemon=True).start()
+
+    def _run_simulate(self):
+        # Block until weapons are available (load triggered by on_show)
+        if not self._weapons_loaded:
+            if not self._weapons_loading:
+                self._weapons_loading = True
+                threading.Thread(target=self._fetch_weapons, daemon=True).start()
+            waited = 0
+            while not self._weapons_loaded and waited < 100:
+                time.sleep(0.1)
+                waited += 1
+            if not self._weapons_loaded:
+                self.after(0, lambda: self._result_lbl.configure(
+                    text="Weapons not ready — try again in a moment."))
+                return
+
+        from ALmodules.loot_sim import simulate as _sim
+        weights = {r: int(v.get()) for r, v in self._weight_vars.items()}
+        count   = int(self._drops_var.get())
+        results = _sim(self._all_weapons, weights, count)
+
+        if not results:
+            self.after(0, lambda: self._result_lbl.configure(
+                text="All weights are 0 — raise at least one rarity slider."))
+            return
+
+        self._sim_results = results
+        self.after(0, self._show_sim_results)
+
+    def _show_sim_results(self):
+        for child in self._result_scroll.winfo_children():
+            try: child.destroy()
+            except: pass
+        self._result_refs.clear()
+        self._result_lbl.configure(text=f"{len(self._sim_results)} drops simulated")
+        self._render_results_batch(self._sim_results, 0)
+
+    def _render_results_batch(self, results: list, start: int):
+        BATCH = 20
+        end = min(start + BATCH, len(results))
+        for idx in range(start, end):
+            self._make_result_card(results[idx], idx // self.RESULT_COLS,
+                                   idx % self.RESULT_COLS)
+        if end < len(results):
+            self.after(10, lambda: self._render_results_batch(results, end))
+
+    def _make_result_card(self, weapon: dict, row: int, col: int):
+        rarity  = (weapon.get("rarity") or "common").lower()
+        img_bg  = WeaponsPage.RARITY_BG.get(rarity, "#404040")
+        rar_col = RARITY_COLORS.get(rarity, C["text_dim"])
+        wid     = weapon.get("id", "")
+        name    = weapon.get("displayName", "Unknown")
+
+        card = ctk.CTkFrame(self._result_scroll, corner_radius=6,
+                             fg_color=C["card"],
+                             border_width=1, border_color=C["border"])
+        card.grid(row=row, column=col, padx=5, pady=5, sticky="nsew")
+
+        img_frame = ctk.CTkFrame(card, height=self.RESULT_IMG_H,
+                                  corner_radius=4, fg_color=img_bg)
+        img_frame.pack(fill="x", padx=3, pady=(3, 0))
+        img_frame.pack_propagate(False)
+
+        img_lbl = ctk.CTkLabel(img_frame, text="", fg_color="transparent")
+        img_lbl.place(relx=0.5, rely=0.5, anchor="center")
+
+        icon_url = (weapon.get("images") or {}).get("icon", "")
+        if icon_url:
+            threading.Thread(
+                target=self._load_result_img,
+                args=(icon_url, img_lbl, wid, self.RESULT_IMG_H - 10),
+                daemon=True,
+            ).start()
+
+        disp = name if len(name) <= 18 else name[:17] + "…"
+        ctk.CTkLabel(card, text=disp,
+                     font=ctk.CTkFont(size=10, weight="bold"),
+                     text_color=C["text"], anchor="w").pack(
+            anchor="w", padx=6, pady=(4, 0))
+        ctk.CTkLabel(card, text=f" {rarity.capitalize()} ",
+                     font=ctk.CTkFont(size=9), text_color=rar_col,
+                     fg_color="#2a2a2a", corner_radius=4).pack(
+            anchor="w", padx=6, pady=(2, 6))
+
+    def _load_result_img(self, url: str, lbl: ctk.CTkLabel, wid: str, size: int):
+        try:
+            cache_path = os.path.join("cache", f"wpn_{wid}.png")
+            if os.path.exists(cache_path):
+                pil = PILImage.open(cache_path).convert("RGBA")
+            else:
+                r = requests.get(url, timeout=10)
+                r.raise_for_status()
+                pil = PILImage.open(io.BytesIO(r.content)).convert("RGBA")
+                os.makedirs("cache", exist_ok=True)
+                pil.save(cache_path)
+            pil    = pil.resize((size, size), PILImage.LANCZOS)
+            ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil, size=(size, size))
+            self._result_refs.append(ctkimg)
+            self.after(0, lambda l=lbl, i=ctkimg: l.configure(image=i))
+        except Exception:
+            pass
+
+    # ── Loot Sim: export ──────────────────────────────────────────────────
+    def _export_csv(self):
+        if not self._sim_results:
+            return
+        from ALmodules.loot_sim import export_csv as _csv
+        from tkinter import filedialog
+        ts   = datetime.now().strftime("%Y%m%d_%H%M%S")
+        path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            initialfile=f"loot_sim_{ts}.csv",
+            initialdir="merged",
+        )
+        if path:
+            _csv(self._sim_results, path)
+            self.app.log(f"[LootSim] CSV exported: {path}")
+
+    def _export_image(self):
+        if not self._sim_results:
+            return
+        threading.Thread(target=self._build_export_image, daemon=True).start()
+
+    def _build_export_image(self):
+        from PIL import ImageDraw
+        CARD_W, CARD_H, IMG_S = 160, 185, 100
+        COLS   = self.RESULT_COLS
+        total  = len(self._sim_results)
+        n_rows = math.ceil(total / COLS)
+        canvas = PILImage.new("RGB", (COLS * CARD_W, n_rows * CARD_H), (18, 18, 18))
+
+        for idx, weapon in enumerate(self._sim_results):
+            wid    = weapon.get("id", "")
+            rarity = (weapon.get("rarity") or "common").lower()
+            name   = weapon.get("displayName", "Unknown")
+            bg_hex = WeaponsPage.RARITY_BG.get(rarity, "#404040").lstrip("#")
+            bg_rgb = tuple(int(bg_hex[i:i+2], 16) for i in (0, 2, 4))
+            cx = (idx % COLS) * CARD_W
+            cy = (idx // COLS) * CARD_H
+
+            canvas.paste(PILImage.new("RGB", (CARD_W, IMG_S), bg_rgb), (cx, cy))
+            try:
+                cp = os.path.join("cache", f"wpn_{wid}.png")
+                if os.path.exists(cp):
+                    icon = PILImage.open(cp).convert("RGBA")
+                    icon = icon.resize((IMG_S - 10, IMG_S - 10), PILImage.LANCZOS)
+                    bg   = PILImage.new("RGBA", (IMG_S, IMG_S), (*bg_rgb, 255))
+                    bg.paste(icon, (5, 5), icon)
+                    canvas.paste(bg.convert("RGB"), (cx + (CARD_W - IMG_S) // 2, cy))
+            except Exception:
+                pass
+
+            draw = ImageDraw.Draw(canvas)
+            disp = name if len(name) <= 20 else name[:19] + "…"
+            draw.text((cx + 6, cy + IMG_S + 6),  disp,               fill=(220, 220, 220))
+            draw.text((cx + 6, cy + IMG_S + 22), rarity.capitalize(), fill=(160, 160, 160))
+
+        os.makedirs("merged", exist_ok=True)
+        ts  = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out = os.path.join("merged", f"loot_sim_{ts}.jpg")
+        canvas.save(out, "JPEG", quality=90)
+        self.app.log(f"[LootSim] Image exported: {out}")
+        self.after(0, lambda p=out: self._show_open_btn(p))
+
+    def _show_open_btn(self, path: str):
+        try:
+            self._open_btn.pack_forget()
+        except Exception:
+            pass
+        self._open_btn.configure(command=lambda: open_file(path))
+        self._open_btn.pack(side="left", padx=(8, 0), pady=8)
+
+    # ══════════════════════════════════════════════════════════════════════
+    # RANDOM LOADOUT
+    # ══════════════════════════════════════════════════════════════════════
+    def _build_loadout(self, parent):
+        # Header
+        hdr = ctk.CTkFrame(parent, fg_color="transparent")
+        hdr.pack(fill="x", padx=16, pady=(12, 4))
+        ctk.CTkLabel(hdr, text="Random Loadout",
+                     font=ctk.CTkFont(size=18, weight="bold"),
+                     text_color=C["text"]).pack(side="left")
+        ctk.CTkButton(
+            hdr, text="💾  Save Image", width=120, height=34,
+            fg_color=C["card"], hover_color=C["border"],
+            font=ctk.CTkFont(size=12), text_color=C["text"],
+            border_width=1, border_color=C["border"],
+            command=self._save_loadout_image,
+        ).pack(side="right", padx=(8, 0))
+        ctk.CTkButton(
+            hdr, text="🎲  Roll Loadout", width=130, height=34,
+            fg_color=C["accent"], hover_color=C["accent_btn"],
+            font=ctk.CTkFont(size=12, weight="bold"), text_color="white",
+            command=self._roll_all,
+        ).pack(side="right")
+
+        ctk.CTkLabel(parent,
+                     text="One weapon per slot, weighted by rarity. "
+                          "Click ↻ to re-roll a single slot.",
+                     font=ctk.CTkFont(size=12),
+                     text_color=C["text_dim"]).pack(pady=(0, 12))
+
+        # Slot cards
+        slots_row = ctk.CTkFrame(parent, fg_color="transparent")
+        slots_row.pack(fill="x", padx=12)
+        for i in range(5):
+            slots_row.columnconfigure(i, weight=1)
+        for i, (slot_name, _) in enumerate(self.SLOTS):
+            self._build_slot_card(slots_row, i, slot_name).grid(
+                row=0, column=i, padx=5, sticky="nsew")
+
+        self._loadout_status = ctk.CTkLabel(
+            parent, text="",
+            font=ctk.CTkFont(size=11), text_color=C["text_dim"])
+        self._loadout_status.pack(pady=(10, 0))
+
+    def _build_slot_card(self, parent, idx: int, slot_name: str) -> ctk.CTkFrame:
+        card = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=8,
+                             border_width=1, border_color=C["border"])
+        ctk.CTkLabel(card, text=slot_name.upper(),
+                     font=ctk.CTkFont(size=9),
+                     text_color=C["text_dim"]).pack(pady=(8, 0))
+
+        img_fm = ctk.CTkFrame(card, height=self.SLOT_IMG_H, corner_radius=6,
+                               fg_color=C["border"])
+        img_fm.pack(fill="x", padx=8, pady=(4, 0))
+        img_fm.pack_propagate(False)
+        self._slot_img_fms[idx] = img_fm
+
+        img_lbl = ctk.CTkLabel(img_fm, text="?",
+                               font=ctk.CTkFont(size=24), text_color=C["text_dim"],
+                               fg_color="transparent")
+        img_lbl.place(relx=0.5, rely=0.5, anchor="center")
+        self._slot_img_lbls[idx] = img_lbl
+
+        name_lbl = ctk.CTkLabel(card, text="—",
+                                 font=ctk.CTkFont(size=11, weight="bold"),
+                                 text_color=C["text"],
+                                 wraplength=150, anchor="center", justify="center")
+        name_lbl.pack(pady=(6, 0), padx=6)
+        self._slot_name_lbls[idx] = name_lbl
+
+        rar_lbl = ctk.CTkLabel(card, text=" — ",
+                               font=ctk.CTkFont(size=9), text_color=C["text_dim"],
+                               fg_color="#2a2a2a", corner_radius=4)
+        rar_lbl.pack(pady=(4, 0))
+        self._slot_rar_lbls[idx] = rar_lbl
+
+        stat_lbl = ctk.CTkLabel(card, text="",
+                                 font=ctk.CTkFont(size=10),
+                                 text_color=C["text_dim"])
+        stat_lbl.pack(pady=(4, 0))
+        self._slot_stat_lbls[idx] = stat_lbl
+
+        ctk.CTkButton(card, text="↻  Re-roll", width=90, height=26,
+                      fg_color=C["border"], hover_color=C["accent"],
+                      font=ctk.CTkFont(size=10), text_color=C["text_dim"],
+                      command=lambda i=idx: self._roll_slot(i)).pack(pady=(8, 10))
+        return card
+
+    # ── Loadout: rolling ──────────────────────────────────────────────────
+    def _roll_all(self):
+        if not self._weapons_loaded:
+            self._loadout_status.configure(text="Loading weapons…")
+            return
+        for i in range(5):
+            self._roll_slot(i)
+        self._loadout_status.configure(text="")
+
+    def _roll_slot(self, idx: int):
+        if not self._all_weapons:
+            return
+        _, categories = self.SLOTS[idx]
+        pool = (self._all_weapons if categories is None
+                else [w for w in self._all_weapons
+                      if w.get("category") in categories])
+        if not pool:
+            return
+        weights = [
+            max(0, self.LOADOUT_WEIGHTS.get(
+                (w.get("rarity") or "common").lower(), 0))
+            for w in pool
+        ]
+        if sum(weights) == 0:
+            return
+        weapon = random.choices(pool, weights=weights, k=1)[0]
+        self._loadout[idx] = weapon
+        self._update_slot(idx, weapon)
+
+    def _update_slot(self, idx: int, weapon: dict):
+        rarity  = (weapon.get("rarity") or "common").lower()
+        img_bg  = WeaponsPage.RARITY_BG.get(rarity, "#404040")
+        rar_col = RARITY_COLORS.get(rarity, C["text_dim"])
+        stats   = weapon.get("stats") or {}
+        name    = weapon.get("displayName", "Unknown")
+        dmg     = int(stats.get("damagePerBullet") or 0)
+        fr      = stats.get("firingRate") or 0
+        wid     = weapon.get("id", "")
+
+        self._slot_img_fms[idx].configure(fg_color=img_bg)
+        self._slot_name_lbls[idx].configure(text=name)
+        self._slot_rar_lbls[idx].configure(
+            text=f" {rarity.capitalize()} ", text_color=rar_col)
+        self._slot_stat_lbls[idx].configure(text=f"DMG: {dmg}  •  FR: {fr}")
+        # Reset image label before async load
+        self._slot_img_lbls[idx].configure(image=None, text="")
+
+        icon_url = (weapon.get("images") or {}).get("icon", "")
+        if icon_url:
+            lbl = self._slot_img_lbls[idx]
+            threading.Thread(
+                target=self._load_slot_img,
+                args=(icon_url, lbl, wid, self.SLOT_IMG_H - 16),
+                daemon=True,
+            ).start()
+
+    def _load_slot_img(self, url: str, lbl: ctk.CTkLabel, wid: str, size: int):
+        try:
+            cache_path = os.path.join("cache", f"wpn_{wid}.png")
+            if os.path.exists(cache_path):
+                pil = PILImage.open(cache_path).convert("RGBA")
+            else:
+                r = requests.get(url, timeout=10)
+                r.raise_for_status()
+                pil = PILImage.open(io.BytesIO(r.content)).convert("RGBA")
+                os.makedirs("cache", exist_ok=True)
+                pil.save(cache_path)
+            pil    = pil.resize((size, size), PILImage.LANCZOS)
+            ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil, size=(size, size))
+            self._slot_img_refs.append(ctkimg)   # keep ref — never cleared
+            self.after(0, lambda l=lbl, i=ctkimg: l.configure(image=i, text=""))
+        except Exception:
+            pass
+
+    # ── Loadout: save image ───────────────────────────────────────────────
+    def _save_loadout_image(self):
+        if not any(self._loadout):
+            return
+        threading.Thread(target=self._build_loadout_image, daemon=True).start()
+
+    def _build_loadout_image(self):
+        from PIL import ImageDraw
+        CARD_W, CARD_H, IMG_S = 220, 280, 140
+        canvas = PILImage.new("RGB", (CARD_W * 5, CARD_H), (18, 18, 18))
+
+        for idx, weapon in enumerate(self._loadout):
+            if weapon is None:
+                continue
+            rarity = (weapon.get("rarity") or "common").lower()
+            bg_hex = WeaponsPage.RARITY_BG.get(rarity, "#404040").lstrip("#")
+            bg_rgb = tuple(int(bg_hex[i:i+2], 16) for i in (0, 2, 4))
+            wid    = weapon.get("id", "")
+            name   = weapon.get("displayName", "Unknown")
+            x      = idx * CARD_W
+
+            card_bg = PILImage.new("RGB", (CARD_W, CARD_H), (30, 30, 30))
+            card_bg.paste(PILImage.new("RGB", (CARD_W, IMG_S), bg_rgb), (0, 0))
+            canvas.paste(card_bg, (x, 0))
+
+            try:
+                cp = os.path.join("cache", f"wpn_{wid}.png")
+                if os.path.exists(cp):
+                    icon = PILImage.open(cp).convert("RGBA")
+                    icon = icon.resize((IMG_S - 10, IMG_S - 10), PILImage.LANCZOS)
+                    bg   = PILImage.new("RGBA", (IMG_S, IMG_S), (*bg_rgb, 255))
+                    bg.paste(icon, (5, 5), icon)
+                    canvas.paste(bg.convert("RGB"), (x + (CARD_W - IMG_S) // 2, 0))
+            except Exception:
+                pass
+
+            draw = ImageDraw.Draw(canvas)
+            disp = name if len(name) <= 22 else name[:21] + "…"
+            draw.text((x + 8, IMG_S + 8),  disp,               fill=(220, 220, 220))
+            draw.text((x + 8, IMG_S + 28), rarity.capitalize(), fill=(160, 160, 160))
+            draw.text((x + 8, IMG_S + 48), self.SLOTS[idx][0].upper(),
+                      fill=(100, 100, 100))
+
+        os.makedirs("merged", exist_ok=True)
+        ts  = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out = os.path.join("merged", f"loadout_{ts}.jpg")
+        canvas.save(out, "JPEG", quality=92)
+        self.app.log(f"[Loadout] Saved: {out}")
+        self.after(0, lambda p=out: (
+            self._loadout_status.configure(
+                text=f"✓ Saved {os.path.basename(p)} — click to open",
+                cursor="hand2"),
+            self._loadout_status.bind(
+                "<Button-1>", lambda e, pp=p: open_file(pp)),
+        ))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -3203,12 +4923,14 @@ class FNLeakApp(ctk.CTk):
             ("dashboard", DashboardPage),
             ("generate",  GeneratePage),
             ("search",    SearchPage),
+            ("merger",    MergerPage),
             ("shop",      ShopPage),
             ("jamtracks", JamTracksPage),
             ("stats",     StatsPage),
             ("map",       MapPage),
             ("playlists", PlaylistsPage),
-            ("creator",   CreatorCodePage),
+            ("weapons",    WeaponsPage),
+            ("creator",    CreatorCodePage),
             ("monitors",  MonitorsPage),
             ("settings",  SettingsPage),
             ("console",   ConsolePage),
@@ -3229,25 +4951,38 @@ class FNLeakApp(ctk.CTk):
         sb = ctk.CTkFrame(self, fg_color=C["sidebar"], corner_radius=0, width=180)
         sb.grid(row=0, column=0, rowspan=3, sticky="nsew")
         sb.grid_propagate(False)
-        sb.grid_rowconfigure(20, weight=1)
+        sb.grid_rowconfigure(1, weight=1)   # nav scroll fills remaining height
+        sb.grid_columnconfigure(0, weight=1)
 
         # Logo
-        ctk.CTkLabel(sb, text="FNLeak",
+        logo = ctk.CTkFrame(sb, fg_color="transparent")
+        logo.grid(row=0, column=0, sticky="ew")
+        ctk.CTkLabel(logo, text="FNLeak",
                      font=ctk.CTkFont(size=20, weight="bold"),
-                     text_color=C["text"]).grid(row=0, column=0, padx=16, pady=(20, 4))
-        ctk.CTkLabel(sb, text="by Fevers",
-                     font=ctk.CTkFont(size=10), text_color=C["text_dim"]).grid(
-            row=1, column=0, padx=16, pady=(0, 16))
+                     text_color=C["text"]).pack(pady=(20, 2))
+        ctk.CTkLabel(logo, text="by Fevers",
+                     font=ctk.CTkFont(size=10),
+                     text_color=C["text_dim"]).pack(pady=(0, 10))
+
+        # Scrollable nav
+        nav_scroll = ctk.CTkScrollableFrame(
+            sb, fg_color="transparent", corner_radius=0,
+            scrollbar_button_color=C["border"],
+            scrollbar_button_hover_color=C["accent"],
+        )
+        nav_scroll.grid(row=1, column=0, sticky="nsew")
 
         nav = [
             ("dashboard", "Dashboard"),
             ("generate",  "Generate"),
             ("search",    "Search"),
+            ("merger",    "Merger"),
             ("shop",      "Item Shop"),
             ("jamtracks", "Jam Tracks"),
             ("stats",     "Player Stats"),
             ("map",       "Map Viewer"),
             ("playlists", "Game Modes"),
+            ("weapons",   "Weapons"),
             ("creator",   "Creator Code"),
             ("monitors",  "Monitors"),
             ("settings",  "Settings"),
@@ -3255,9 +4990,9 @@ class FNLeakApp(ctk.CTk):
         ]
 
         self._nav_buttons: dict[str, ctk.CTkButton] = {}
-        for i, (key, label) in enumerate(nav):
+        for key, label in nav:
             btn = ctk.CTkButton(
-                sb, text=label, anchor="w",
+                nav_scroll, text=label, anchor="w",
                 width=160, height=36,
                 fg_color="transparent",
                 hover_color=C["card"],
@@ -3265,8 +5000,22 @@ class FNLeakApp(ctk.CTk):
                 font=ctk.CTkFont(size=13),
                 command=lambda k=key: self.show_page(k),
             )
-            btn.grid(row=i + 2, column=0, padx=10, pady=2)
+            btn.pack(padx=10, pady=2)
             self._nav_buttons[key] = btn
+
+        # Forward scroll events from buttons to the scrollable canvas
+        _cv = nav_scroll._parent_canvas
+        def _fwd(e):
+            if e.delta:
+                _cv.yview_scroll(int(-1 * (e.delta / 120)), "units")
+            elif e.num == 4:
+                _cv.yview_scroll(-1, "units")
+            elif e.num == 5:
+                _cv.yview_scroll(1, "units")
+        for btn in self._nav_buttons.values():
+            btn.bind("<MouseWheel>", _fwd, add="+")
+            btn.bind("<Button-4>",   _fwd, add="+")
+            btn.bind("<Button-5>",   _fwd, add="+")
 
         return sb
 
