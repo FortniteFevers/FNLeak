@@ -1,0 +1,2175 @@
+{
+    "status": 200,
+    "data": [
+        {
+            "version": "40_10",
+            "chapter": 7,
+            "season": 2,
+            "patch": "chapter_7/season_2/40_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=40_10",
+            "hasPois": false
+        },
+        {
+            "version": "40_00",
+            "chapter": 7,
+            "season": 2,
+            "patch": "chapter_7/season_2/40_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=40_00",
+            "hasPois": false
+        },
+        {
+            "version": "39_51",
+            "chapter": 7,
+            "season": 1,
+            "patch": "chapter_7/season_1/39_51",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=39_51",
+            "hasPois": false
+        },
+        {
+            "version": "39_50",
+            "chapter": 7,
+            "season": 1,
+            "patch": "chapter_7/season_1/39_50",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=39_50",
+            "hasPois": false
+        },
+        {
+            "version": "39_40",
+            "chapter": 7,
+            "season": 1,
+            "patch": "chapter_7/season_1/39_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=39_40",
+            "hasPois": false
+        },
+        {
+            "version": "39_30",
+            "chapter": 7,
+            "season": 1,
+            "patch": "chapter_7/season_1/39_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=39_30",
+            "hasPois": false
+        },
+        {
+            "version": "39_20",
+            "chapter": 7,
+            "season": 1,
+            "patch": "chapter_7/season_1/39_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=39_20",
+            "hasPois": false
+        },
+        {
+            "version": "39_11",
+            "chapter": 7,
+            "season": 1,
+            "patch": "chapter_7/season_1/39_11",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=39_11",
+            "hasPois": false
+        },
+        {
+            "version": "39_10",
+            "chapter": 7,
+            "season": 1,
+            "patch": "chapter_7/season_1/39_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=39_10",
+            "hasPois": false
+        },
+        {
+            "version": "39_00",
+            "chapter": 7,
+            "season": 1,
+            "patch": "chapter_7/season_1/39_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=39_00",
+            "hasPois": false
+        },
+        {
+            "version": "38_11",
+            "chapter": 6,
+            "season": 5,
+            "patch": "chapter_6/season_5/38_11",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=38_11",
+            "hasPois": false
+        },
+        {
+            "version": "38_10",
+            "chapter": 6,
+            "season": 5,
+            "patch": "chapter_6/season_5/38_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=38_10",
+            "hasPois": false
+        },
+        {
+            "version": "38_00",
+            "chapter": 6,
+            "season": 5,
+            "patch": "chapter_6/season_5/38_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=38_00",
+            "hasPois": false
+        },
+        {
+            "version": "37_50",
+            "chapter": 6,
+            "season": 4,
+            "patch": "chapter_6/season_4/37_50",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=37_50",
+            "hasPois": false
+        },
+        {
+            "version": "37_40",
+            "chapter": 6,
+            "season": 4,
+            "patch": "chapter_6/season_4/37_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=37_40",
+            "hasPois": false
+        },
+        {
+            "version": "37_20",
+            "chapter": 6,
+            "season": 4,
+            "patch": "chapter_6/season_4/37_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=37_20",
+            "hasPois": false
+        },
+        {
+            "version": "37_10",
+            "chapter": 6,
+            "season": 4,
+            "patch": "chapter_6/season_4/37_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=37_10",
+            "hasPois": false
+        },
+        {
+            "version": "37_00",
+            "chapter": 6,
+            "season": 4,
+            "patch": "chapter_6/season_4/37_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=37_00",
+            "hasPois": false
+        },
+        {
+            "version": "36_30",
+            "chapter": 6,
+            "season": 4,
+            "patch": "chapter_6/season_4/36_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=36_30",
+            "hasPois": false
+        },
+        {
+            "version": "36_00",
+            "chapter": 6,
+            "season": 4,
+            "patch": "chapter_6/season_4/36_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=36_00",
+            "hasPois": false
+        },
+        {
+            "version": "35_20",
+            "chapter": 6,
+            "season": 3,
+            "patch": "chapter_6/season_3/35_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=35_20",
+            "hasPois": false
+        },
+        {
+            "version": "35_00",
+            "chapter": 6,
+            "season": 3,
+            "patch": "chapter_6/season_3/35_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=35_00",
+            "hasPois": false
+        },
+        {
+            "version": "34_40",
+            "chapter": 6,
+            "season": 2,
+            "patch": "chapter_6/season_2/34_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=34_40",
+            "hasPois": false
+        },
+        {
+            "version": "34_30",
+            "chapter": 6,
+            "season": 2,
+            "patch": "chapter_6/season_2/34_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=34_30",
+            "hasPois": false
+        },
+        {
+            "version": "34_20",
+            "chapter": 6,
+            "season": 2,
+            "patch": "chapter_6/season_2/34_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=34_20",
+            "hasPois": false
+        },
+        {
+            "version": "34_10",
+            "chapter": 6,
+            "season": 2,
+            "patch": "chapter_6/season_2/34_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=34_10",
+            "hasPois": false
+        },
+        {
+            "version": "34_00",
+            "chapter": 6,
+            "season": 2,
+            "patch": "chapter_6/season_2/34_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=34_00",
+            "hasPois": false
+        },
+        {
+            "version": "33_30",
+            "chapter": 6,
+            "season": 1,
+            "patch": "chapter_6/season_1/33_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=33_30",
+            "hasPois": false
+        },
+        {
+            "version": "33_20",
+            "chapter": 6,
+            "season": 1,
+            "patch": "chapter_6/season_1/33_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=33_20",
+            "hasPois": false
+        },
+        {
+            "version": "33_11",
+            "chapter": 6,
+            "season": 1,
+            "patch": "chapter_6/season_1/33_11",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=33_11",
+            "hasPois": false
+        },
+        {
+            "version": "33_10",
+            "chapter": 6,
+            "season": 1,
+            "patch": "chapter_6/season_1/33_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=33_10",
+            "hasPois": false
+        },
+        {
+            "version": "33_00",
+            "chapter": 6,
+            "season": 1,
+            "patch": "chapter_6/season_1/33_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=33_00",
+            "hasPois": false
+        },
+        {
+            "version": "32_11",
+            "chapter": 5,
+            "season": 5,
+            "patch": "chapter_5/season_5/32_11",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=32_11",
+            "hasPois": false
+        },
+        {
+            "version": "32_00",
+            "chapter": 5,
+            "season": 5,
+            "patch": "chapter_5/season_5/32_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=32_00",
+            "hasPois": false
+        },
+        {
+            "version": "31_41",
+            "chapter": 5,
+            "season": 4,
+            "patch": "chapter_5/season_4/31_41",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=31_41",
+            "hasPois": false
+        },
+        {
+            "version": "31_40",
+            "chapter": 5,
+            "season": 4,
+            "patch": "chapter_5/season_4/31_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=31_40",
+            "hasPois": false
+        },
+        {
+            "version": "31_30",
+            "chapter": 5,
+            "season": 4,
+            "patch": "chapter_5/season_4/31_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=31_30",
+            "hasPois": false
+        },
+        {
+            "version": "31_20",
+            "chapter": 5,
+            "season": 4,
+            "patch": "chapter_5/season_4/31_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=31_20",
+            "hasPois": false
+        },
+        {
+            "version": "31_10",
+            "chapter": 5,
+            "season": 4,
+            "patch": "chapter_5/season_4/31_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=31_10",
+            "hasPois": false
+        },
+        {
+            "version": "31_00",
+            "chapter": 5,
+            "season": 4,
+            "patch": "chapter_5/season_4/31_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=31_00",
+            "hasPois": false
+        },
+        {
+            "version": "30_40",
+            "chapter": 5,
+            "season": 3,
+            "patch": "chapter_5/season_3/30_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=30_40",
+            "hasPois": false
+        },
+        {
+            "version": "30_30",
+            "chapter": 5,
+            "season": 3,
+            "patch": "chapter_5/season_3/30_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=30_30",
+            "hasPois": false
+        },
+        {
+            "version": "30_20",
+            "chapter": 5,
+            "season": 3,
+            "patch": "chapter_5/season_3/30_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=30_20",
+            "hasPois": false
+        },
+        {
+            "version": "30_10",
+            "chapter": 5,
+            "season": 3,
+            "patch": "chapter_5/season_3/30_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=30_10",
+            "hasPois": false
+        },
+        {
+            "version": "30_00",
+            "chapter": 5,
+            "season": 3,
+            "patch": "chapter_5/season_3/30_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=30_00",
+            "hasPois": false
+        },
+        {
+            "version": "29_40",
+            "chapter": 5,
+            "season": 2,
+            "patch": "chapter_5/season_2/29_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=29_40",
+            "hasPois": false
+        },
+        {
+            "version": "29_30",
+            "chapter": 5,
+            "season": 2,
+            "patch": "chapter_5/season_2/29_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=29_30",
+            "hasPois": false
+        },
+        {
+            "version": "29_20",
+            "chapter": 5,
+            "season": 2,
+            "patch": "chapter_5/season_2/29_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=29_20",
+            "hasPois": false
+        },
+        {
+            "version": "29_10",
+            "chapter": 5,
+            "season": 2,
+            "patch": "chapter_5/season_2/29_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=29_10",
+            "hasPois": false
+        },
+        {
+            "version": "29_01",
+            "chapter": 5,
+            "season": 2,
+            "patch": "chapter_5/season_2/29_01",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=29_01",
+            "hasPois": false
+        },
+        {
+            "version": "29_00",
+            "chapter": 5,
+            "season": 2,
+            "patch": "chapter_5/season_2/29_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=29_00",
+            "hasPois": false
+        },
+        {
+            "version": "28_30",
+            "chapter": 5,
+            "season": 1,
+            "patch": "chapter_5/season_1/28_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=28_30",
+            "hasPois": false
+        },
+        {
+            "version": "28_20",
+            "chapter": 5,
+            "season": 1,
+            "patch": "chapter_5/season_1/28_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=28_20",
+            "hasPois": false
+        },
+        {
+            "version": "28_10",
+            "chapter": 5,
+            "season": 1,
+            "patch": "chapter_5/season_1/28_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=28_10",
+            "hasPois": false
+        },
+        {
+            "version": "28_01",
+            "chapter": 5,
+            "season": 1,
+            "patch": "chapter_5/season_1/28_01",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=28_01",
+            "hasPois": false
+        },
+        {
+            "version": "28_00",
+            "chapter": 5,
+            "season": 1,
+            "patch": "chapter_5/season_1/28_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=28_00",
+            "hasPois": false
+        },
+        {
+            "version": "27_11",
+            "chapter": 4,
+            "season": 5,
+            "patch": "chapter_4/season_5/27_11",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=27_11",
+            "hasPois": false
+        },
+        {
+            "version": "27_10",
+            "chapter": 4,
+            "season": 5,
+            "patch": "chapter_4/season_5/27_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=27_10",
+            "hasPois": false
+        },
+        {
+            "version": "27_00",
+            "chapter": 4,
+            "season": 5,
+            "patch": "chapter_4/season_5/27_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=27_00",
+            "hasPois": false
+        },
+        {
+            "version": "27_00-stage-2",
+            "chapter": 4,
+            "season": 5,
+            "patch": "chapter_4/season_5/27_00-stage-2",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=27_00-stage-2",
+            "hasPois": false
+        },
+        {
+            "version": "26_30",
+            "chapter": 4,
+            "season": 4,
+            "patch": "chapter_4/season_4/26_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=26_30",
+            "hasPois": false
+        },
+        {
+            "version": "26_20",
+            "chapter": 4,
+            "season": 4,
+            "patch": "chapter_4/season_4/26_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=26_20",
+            "hasPois": false
+        },
+        {
+            "version": "26_10",
+            "chapter": 4,
+            "season": 4,
+            "patch": "chapter_4/season_4/26_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=26_10",
+            "hasPois": false
+        },
+        {
+            "version": "26_00",
+            "chapter": 4,
+            "season": 4,
+            "patch": "chapter_4/season_4/26_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=26_00",
+            "hasPois": false
+        },
+        {
+            "version": "25_30",
+            "chapter": 4,
+            "season": 3,
+            "patch": "chapter_4/season_3/25_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=25_30",
+            "hasPois": false
+        },
+        {
+            "version": "25_20",
+            "chapter": 4,
+            "season": 3,
+            "patch": "chapter_4/season_3/25_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=25_20",
+            "hasPois": false
+        },
+        {
+            "version": "25_11",
+            "chapter": 4,
+            "season": 3,
+            "patch": "chapter_4/season_3/25_11",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=25_11",
+            "hasPois": false
+        },
+        {
+            "version": "25_10",
+            "chapter": 4,
+            "season": 3,
+            "patch": "chapter_4/season_3/25_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=25_10",
+            "hasPois": false
+        },
+        {
+            "version": "25_00",
+            "chapter": 4,
+            "season": 3,
+            "patch": "chapter_4/season_3/25_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=25_00",
+            "hasPois": false
+        },
+        {
+            "version": "24_40",
+            "chapter": 4,
+            "season": 2,
+            "patch": "chapter_4/season_2/24_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=24_40",
+            "hasPois": false
+        },
+        {
+            "version": "24_30",
+            "chapter": 4,
+            "season": 2,
+            "patch": "chapter_4/season_2/24_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=24_30",
+            "hasPois": false
+        },
+        {
+            "version": "24_20",
+            "chapter": 4,
+            "season": 2,
+            "patch": "chapter_4/season_2/24_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=24_20",
+            "hasPois": false
+        },
+        {
+            "version": "24_10",
+            "chapter": 4,
+            "season": 2,
+            "patch": "chapter_4/season_2/24_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=24_10",
+            "hasPois": false
+        },
+        {
+            "version": "24_01",
+            "chapter": 4,
+            "season": 2,
+            "patch": "chapter_4/season_2/24_01",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=24_01",
+            "hasPois": false
+        },
+        {
+            "version": "24_00",
+            "chapter": 4,
+            "season": 2,
+            "patch": "chapter_4/season_2/24_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=24_00",
+            "hasPois": false
+        },
+        {
+            "version": "23_50",
+            "chapter": 4,
+            "season": 1,
+            "patch": "chapter_4/season_1/23_50",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=23_50",
+            "hasPois": false
+        },
+        {
+            "version": "23_40",
+            "chapter": 4,
+            "season": 1,
+            "patch": "chapter_4/season_1/23_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=23_40",
+            "hasPois": false
+        },
+        {
+            "version": "23_30",
+            "chapter": 4,
+            "season": 1,
+            "patch": "chapter_4/season_1/23_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=23_30",
+            "hasPois": false
+        },
+        {
+            "version": "23_20",
+            "chapter": 4,
+            "season": 1,
+            "patch": "chapter_4/season_1/23_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=23_20",
+            "hasPois": false
+        },
+        {
+            "version": "23_10",
+            "chapter": 4,
+            "season": 1,
+            "patch": "chapter_4/season_1/23_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=23_10",
+            "hasPois": false
+        },
+        {
+            "version": "23_00",
+            "chapter": 4,
+            "season": 1,
+            "patch": "chapter_4/season_1/23_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=23_00",
+            "hasPois": false
+        },
+        {
+            "version": "22_40",
+            "chapter": 3,
+            "season": 4,
+            "patch": "chapter_3/season_4/22_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=22_40",
+            "hasPois": false
+        },
+        {
+            "version": "22_30",
+            "chapter": 3,
+            "season": 4,
+            "patch": "chapter_3/season_4/22_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=22_30",
+            "hasPois": false
+        },
+        {
+            "version": "22_20",
+            "chapter": 3,
+            "season": 4,
+            "patch": "chapter_3/season_4/22_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=22_20",
+            "hasPois": false
+        },
+        {
+            "version": "22_10",
+            "chapter": 3,
+            "season": 4,
+            "patch": "chapter_3/season_4/22_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=22_10",
+            "hasPois": false
+        },
+        {
+            "version": "22_00",
+            "chapter": 3,
+            "season": 4,
+            "patch": "chapter_3/season_4/22_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=22_00",
+            "hasPois": false
+        },
+        {
+            "version": "21_51",
+            "chapter": 3,
+            "season": 3,
+            "patch": "chapter_3/season_3/21_51",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=21_51",
+            "hasPois": false
+        },
+        {
+            "version": "21_50",
+            "chapter": 3,
+            "season": 3,
+            "patch": "chapter_3/season_3/21_50",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=21_50",
+            "hasPois": false
+        },
+        {
+            "version": "21_40",
+            "chapter": 3,
+            "season": 3,
+            "patch": "chapter_3/season_3/21_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=21_40",
+            "hasPois": false
+        },
+        {
+            "version": "21_30",
+            "chapter": 3,
+            "season": 3,
+            "patch": "chapter_3/season_3/21_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=21_30",
+            "hasPois": false
+        },
+        {
+            "version": "21_20",
+            "chapter": 3,
+            "season": 3,
+            "patch": "chapter_3/season_3/21_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=21_20",
+            "hasPois": false
+        },
+        {
+            "version": "21_10",
+            "chapter": 3,
+            "season": 3,
+            "patch": "chapter_3/season_3/21_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=21_10",
+            "hasPois": false
+        },
+        {
+            "version": "21_00",
+            "chapter": 3,
+            "season": 3,
+            "patch": "chapter_3/season_3/21_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=21_00",
+            "hasPois": false
+        },
+        {
+            "version": "20_40",
+            "chapter": 3,
+            "season": 2,
+            "patch": "chapter_3/season_2/20_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=20_40",
+            "hasPois": false
+        },
+        {
+            "version": "20_30",
+            "chapter": 3,
+            "season": 2,
+            "patch": "chapter_3/season_2/20_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=20_30",
+            "hasPois": false
+        },
+        {
+            "version": "20_20",
+            "chapter": 3,
+            "season": 2,
+            "patch": "chapter_3/season_2/20_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=20_20",
+            "hasPois": false
+        },
+        {
+            "version": "20_10",
+            "chapter": 3,
+            "season": 2,
+            "patch": "chapter_3/season_2/20_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=20_10",
+            "hasPois": false
+        },
+        {
+            "version": "20_00",
+            "chapter": 3,
+            "season": 2,
+            "patch": "chapter_3/season_2/20_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=20_00",
+            "hasPois": false
+        },
+        {
+            "version": "19_40",
+            "chapter": 3,
+            "season": 1,
+            "patch": "chapter_3/season_1/19_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=19_40",
+            "hasPois": false
+        },
+        {
+            "version": "19_30",
+            "chapter": 3,
+            "season": 1,
+            "patch": "chapter_3/season_1/19_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=19_30",
+            "hasPois": false
+        },
+        {
+            "version": "19_20",
+            "chapter": 3,
+            "season": 1,
+            "patch": "chapter_3/season_1/19_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=19_20",
+            "hasPois": false
+        },
+        {
+            "version": "19_10",
+            "chapter": 3,
+            "season": 1,
+            "patch": "chapter_3/season_1/19_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=19_10",
+            "hasPois": false
+        },
+        {
+            "version": "19_01",
+            "chapter": 3,
+            "season": 1,
+            "patch": "chapter_3/season_1/19_01",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=19_01",
+            "hasPois": false
+        },
+        {
+            "version": "19_00",
+            "chapter": 3,
+            "season": 1,
+            "patch": "chapter_3/season_1/19_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=19_00",
+            "hasPois": false
+        },
+        {
+            "version": "18_40",
+            "chapter": 2,
+            "season": 8,
+            "patch": "chapter_2/season_8/18_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=18_40",
+            "hasPois": false
+        },
+        {
+            "version": "18_30",
+            "chapter": 2,
+            "season": 8,
+            "patch": "chapter_2/season_8/18_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=18_30",
+            "hasPois": false
+        },
+        {
+            "version": "18_21",
+            "chapter": 2,
+            "season": 8,
+            "patch": "chapter_2/season_8/18_21",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=18_21",
+            "hasPois": false
+        },
+        {
+            "version": "18_20",
+            "chapter": 2,
+            "season": 8,
+            "patch": "chapter_2/season_8/18_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=18_20",
+            "hasPois": false
+        },
+        {
+            "version": "18_10",
+            "chapter": 2,
+            "season": 8,
+            "patch": "chapter_2/season_8/18_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=18_10",
+            "hasPois": false
+        },
+        {
+            "version": "18_00",
+            "chapter": 2,
+            "season": 8,
+            "patch": "chapter_2/season_8/18_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=18_00",
+            "hasPois": false
+        },
+        {
+            "version": "17_50",
+            "chapter": 2,
+            "season": 7,
+            "patch": "chapter_2/season_7/17_50",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=17_50",
+            "hasPois": false
+        },
+        {
+            "version": "17_40",
+            "chapter": 2,
+            "season": 7,
+            "patch": "chapter_2/season_7/17_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=17_40",
+            "hasPois": false
+        },
+        {
+            "version": "17_30",
+            "chapter": 2,
+            "season": 7,
+            "patch": "chapter_2/season_7/17_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=17_30",
+            "hasPois": false
+        },
+        {
+            "version": "17_21",
+            "chapter": 2,
+            "season": 7,
+            "patch": "chapter_2/season_7/17_21",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=17_21",
+            "hasPois": false
+        },
+        {
+            "version": "17_20",
+            "chapter": 2,
+            "season": 7,
+            "patch": "chapter_2/season_7/17_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=17_20",
+            "hasPois": false
+        },
+        {
+            "version": "17_10",
+            "chapter": 2,
+            "season": 7,
+            "patch": "chapter_2/season_7/17_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=17_10",
+            "hasPois": false
+        },
+        {
+            "version": "17_00",
+            "chapter": 2,
+            "season": 7,
+            "patch": "chapter_2/season_7/17_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=17_00",
+            "hasPois": false
+        },
+        {
+            "version": "16_50",
+            "chapter": 2,
+            "season": 6,
+            "patch": "chapter_2/season_6/16_50",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=16_50",
+            "hasPois": false
+        },
+        {
+            "version": "16_40",
+            "chapter": 2,
+            "season": 6,
+            "patch": "chapter_2/season_6/16_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=16_40",
+            "hasPois": false
+        },
+        {
+            "version": "16_30",
+            "chapter": 2,
+            "season": 6,
+            "patch": "chapter_2/season_6/16_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=16_30",
+            "hasPois": false
+        },
+        {
+            "version": "16_20",
+            "chapter": 2,
+            "season": 6,
+            "patch": "chapter_2/season_6/16_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=16_20",
+            "hasPois": false
+        },
+        {
+            "version": "16_10",
+            "chapter": 2,
+            "season": 6,
+            "patch": "chapter_2/season_6/16_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=16_10",
+            "hasPois": false
+        },
+        {
+            "version": "16_00",
+            "chapter": 2,
+            "season": 6,
+            "patch": "chapter_2/season_6/16_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=16_00",
+            "hasPois": false
+        },
+        {
+            "version": "15_40",
+            "chapter": 2,
+            "season": 5,
+            "patch": "chapter_2/season_5/15_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=15_40",
+            "hasPois": false
+        },
+        {
+            "version": "15_30",
+            "chapter": 2,
+            "season": 5,
+            "patch": "chapter_2/season_5/15_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=15_30",
+            "hasPois": false
+        },
+        {
+            "version": "15_21",
+            "chapter": 2,
+            "season": 5,
+            "patch": "chapter_2/season_5/15_21",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=15_21",
+            "hasPois": false
+        },
+        {
+            "version": "15_20",
+            "chapter": 2,
+            "season": 5,
+            "patch": "chapter_2/season_5/15_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=15_20",
+            "hasPois": false
+        },
+        {
+            "version": "15_10-snow-2",
+            "chapter": 2,
+            "season": 5,
+            "patch": "chapter_2/season_5/15_10-snow-2",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=15_10-snow-2",
+            "hasPois": false
+        },
+        {
+            "version": "15_10-snow",
+            "chapter": 2,
+            "season": 5,
+            "patch": "chapter_2/season_5/15_10-snow",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=15_10-snow",
+            "hasPois": false
+        },
+        {
+            "version": "15_10",
+            "chapter": 2,
+            "season": 5,
+            "patch": "chapter_2/season_5/15_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=15_10",
+            "hasPois": false
+        },
+        {
+            "version": "15_00",
+            "chapter": 2,
+            "season": 5,
+            "patch": "chapter_2/season_5/15_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=15_00",
+            "hasPois": false
+        },
+        {
+            "version": "14_40",
+            "chapter": 2,
+            "season": 4,
+            "patch": "chapter_2/season_4/14_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=14_40",
+            "hasPois": false
+        },
+        {
+            "version": "14_20",
+            "chapter": 2,
+            "season": 4,
+            "patch": "chapter_2/season_4/14_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=14_20",
+            "hasPois": false
+        },
+        {
+            "version": "14_10",
+            "chapter": 2,
+            "season": 4,
+            "patch": "chapter_2/season_4/14_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=14_10",
+            "hasPois": false
+        },
+        {
+            "version": "14_00",
+            "chapter": 2,
+            "season": 4,
+            "patch": "chapter_2/season_4/14_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=14_00",
+            "hasPois": false
+        },
+        {
+            "version": "13_30",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_30",
+            "hasPois": false
+        },
+        {
+            "version": "13_30-(water-lvl-1)",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_30-(water-lvl-1)",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_30-(water-lvl-1)",
+            "hasPois": false
+        },
+        {
+            "version": "13_30-(water-lvl-2)",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_30-(water-lvl-2)",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_30-(water-lvl-2)",
+            "hasPois": false
+        },
+        {
+            "version": "13_30-(water-lvl-3)",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_30-(water-lvl-3)",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_30-(water-lvl-3)",
+            "hasPois": false
+        },
+        {
+            "version": "13_20-(water-lvl-7)",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_20-(water-lvl-7)",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_20-(water-lvl-7)",
+            "hasPois": false
+        },
+        {
+            "version": "13_20-(water-lvl-6)",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_20-(water-lvl-6)",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_20-(water-lvl-6)",
+            "hasPois": false
+        },
+        {
+            "version": "13_20-(water-lvl-5)",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_20-(water-lvl-5)",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_20-(water-lvl-5)",
+            "hasPois": false
+        },
+        {
+            "version": "13_20-(water-lvl-4)",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_20-(water-lvl-4)",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_20-(water-lvl-4)",
+            "hasPois": false
+        },
+        {
+            "version": "13_20",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_20",
+            "hasPois": false
+        },
+        {
+            "version": "13_00",
+            "chapter": 2,
+            "season": 3,
+            "patch": "chapter_2/season_3/13_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=13_00",
+            "hasPois": false
+        },
+        {
+            "version": "12_60",
+            "chapter": 2,
+            "season": 2,
+            "patch": "chapter_2/season_2/12_60",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=12_60",
+            "hasPois": false
+        },
+        {
+            "version": "12_50",
+            "chapter": 2,
+            "season": 2,
+            "patch": "chapter_2/season_2/12_50",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=12_50",
+            "hasPois": false
+        },
+        {
+            "version": "12_20",
+            "chapter": 2,
+            "season": 2,
+            "patch": "chapter_2/season_2/12_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=12_20",
+            "hasPois": false
+        },
+        {
+            "version": "12_00",
+            "chapter": 2,
+            "season": 2,
+            "patch": "chapter_2/season_2/12_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=12_00",
+            "hasPois": false
+        },
+        {
+            "version": "11_40",
+            "chapter": 2,
+            "season": 1,
+            "patch": "chapter_2/season_1/11_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=11_40",
+            "hasPois": false
+        },
+        {
+            "version": "11_31",
+            "chapter": 2,
+            "season": 1,
+            "patch": "chapter_2/season_1/11_31",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=11_31",
+            "hasPois": false
+        },
+        {
+            "version": "11_30",
+            "chapter": 2,
+            "season": 1,
+            "patch": "chapter_2/season_1/11_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=11_30",
+            "hasPois": false
+        },
+        {
+            "version": "11_10",
+            "chapter": 2,
+            "season": 1,
+            "patch": "chapter_2/season_1/11_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=11_10",
+            "hasPois": false
+        },
+        {
+            "version": "11_00",
+            "chapter": 2,
+            "season": 1,
+            "patch": "chapter_2/season_1/11_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=11_00",
+            "hasPois": false
+        },
+        {
+            "version": "10_40",
+            "chapter": 1,
+            "season": 10,
+            "patch": "chapter_1/season_10/10_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=10_40",
+            "hasPois": false
+        },
+        {
+            "version": "10_31",
+            "chapter": 1,
+            "season": 10,
+            "patch": "chapter_1/season_10/10_31",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=10_31",
+            "hasPois": false
+        },
+        {
+            "version": "10_30",
+            "chapter": 1,
+            "season": 10,
+            "patch": "chapter_1/season_10/10_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=10_30",
+            "hasPois": false
+        },
+        {
+            "version": "10_20",
+            "chapter": 1,
+            "season": 10,
+            "patch": "chapter_1/season_10/10_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=10_20",
+            "hasPois": false
+        },
+        {
+            "version": "10_10",
+            "chapter": 1,
+            "season": 10,
+            "patch": "chapter_1/season_10/10_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=10_10",
+            "hasPois": false
+        },
+        {
+            "version": "9_41",
+            "chapter": 1,
+            "season": 9,
+            "patch": "chapter_1/season_9/9_41",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=9_41",
+            "hasPois": false
+        },
+        {
+            "version": "9_40",
+            "chapter": 1,
+            "season": 9,
+            "patch": "chapter_1/season_9/9_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=9_40",
+            "hasPois": false
+        },
+        {
+            "version": "9_30",
+            "chapter": 1,
+            "season": 9,
+            "patch": "chapter_1/season_9/9_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=9_30",
+            "hasPois": false
+        },
+        {
+            "version": "9_21",
+            "chapter": 1,
+            "season": 9,
+            "patch": "chapter_1/season_9/9_21",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=9_21",
+            "hasPois": false
+        },
+        {
+            "version": "9_20",
+            "chapter": 1,
+            "season": 9,
+            "patch": "chapter_1/season_9/9_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=9_20",
+            "hasPois": false
+        },
+        {
+            "version": "9_10",
+            "chapter": 1,
+            "season": 9,
+            "patch": "chapter_1/season_9/9_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=9_10",
+            "hasPois": false
+        },
+        {
+            "version": "9_01",
+            "chapter": 1,
+            "season": 9,
+            "patch": "chapter_1/season_9/9_01",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=9_01",
+            "hasPois": false
+        },
+        {
+            "version": "9_00",
+            "chapter": 1,
+            "season": 9,
+            "patch": "chapter_1/season_9/9_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=9_00",
+            "hasPois": false
+        },
+        {
+            "version": "8_51",
+            "chapter": 1,
+            "season": 8,
+            "patch": "chapter_1/season_8/8_51",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=8_51",
+            "hasPois": false
+        },
+        {
+            "version": "8_50",
+            "chapter": 1,
+            "season": 8,
+            "patch": "chapter_1/season_8/8_50",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=8_50",
+            "hasPois": false
+        },
+        {
+            "version": "8_40",
+            "chapter": 1,
+            "season": 8,
+            "patch": "chapter_1/season_8/8_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=8_40",
+            "hasPois": false
+        },
+        {
+            "version": "8_30",
+            "chapter": 1,
+            "season": 8,
+            "patch": "chapter_1/season_8/8_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=8_30",
+            "hasPois": false
+        },
+        {
+            "version": "8_20",
+            "chapter": 1,
+            "season": 8,
+            "patch": "chapter_1/season_8/8_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=8_20",
+            "hasPois": false
+        },
+        {
+            "version": "8_10",
+            "chapter": 1,
+            "season": 8,
+            "patch": "chapter_1/season_8/8_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=8_10",
+            "hasPois": false
+        },
+        {
+            "version": "8_01",
+            "chapter": 1,
+            "season": 8,
+            "patch": "chapter_1/season_8/8_01",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=8_01",
+            "hasPois": false
+        },
+        {
+            "version": "8_00",
+            "chapter": 1,
+            "season": 8,
+            "patch": "chapter_1/season_8/8_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=8_00",
+            "hasPois": false
+        },
+        {
+            "version": "7_40",
+            "chapter": 1,
+            "season": 7,
+            "patch": "chapter_1/season_7/7_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=7_40",
+            "hasPois": false
+        },
+        {
+            "version": "7_30",
+            "chapter": 1,
+            "season": 7,
+            "patch": "chapter_1/season_7/7_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=7_30",
+            "hasPois": false
+        },
+        {
+            "version": "7_20",
+            "chapter": 1,
+            "season": 7,
+            "patch": "chapter_1/season_7/7_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=7_20",
+            "hasPois": false
+        },
+        {
+            "version": "7_10-snow",
+            "chapter": 1,
+            "season": 7,
+            "patch": "chapter_1/season_7/7_10-snow",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=7_10-snow",
+            "hasPois": false
+        },
+        {
+            "version": "7_10",
+            "chapter": 1,
+            "season": 7,
+            "patch": "chapter_1/season_7/7_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=7_10",
+            "hasPois": false
+        },
+        {
+            "version": "7_01",
+            "chapter": 1,
+            "season": 7,
+            "patch": "chapter_1/season_7/7_01",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=7_01",
+            "hasPois": false
+        },
+        {
+            "version": "7_00",
+            "chapter": 1,
+            "season": 7,
+            "patch": "chapter_1/season_7/7_00",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=7_00",
+            "hasPois": false
+        },
+        {
+            "version": "6_31",
+            "chapter": 1,
+            "season": 6,
+            "patch": "chapter_1/season_6/6_31",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=6_31",
+            "hasPois": false
+        },
+        {
+            "version": "6_30",
+            "chapter": 1,
+            "season": 6,
+            "patch": "chapter_1/season_6/6_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=6_30",
+            "hasPois": false
+        },
+        {
+            "version": "6_21",
+            "chapter": 1,
+            "season": 6,
+            "patch": "chapter_1/season_6/6_21",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=6_21",
+            "hasPois": false
+        },
+        {
+            "version": "6_20",
+            "chapter": 1,
+            "season": 6,
+            "patch": "chapter_1/season_6/6_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=6_20",
+            "hasPois": false
+        },
+        {
+            "version": "6_10",
+            "chapter": 1,
+            "season": 6,
+            "patch": "chapter_1/season_6/6_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=6_10",
+            "hasPois": false
+        },
+        {
+            "version": "6_01",
+            "chapter": 1,
+            "season": 6,
+            "patch": "chapter_1/season_6/6_01",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=6_01",
+            "hasPois": false
+        },
+        {
+            "version": "5_41",
+            "chapter": 1,
+            "season": 5,
+            "patch": "chapter_1/season_5/5_41",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=5_41",
+            "hasPois": false
+        },
+        {
+            "version": "5_40",
+            "chapter": 1,
+            "season": 5,
+            "patch": "chapter_1/season_5/5_40",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=5_40",
+            "hasPois": false
+        },
+        {
+            "version": "5_30",
+            "chapter": 1,
+            "season": 5,
+            "patch": "chapter_1/season_5/5_30",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=5_30",
+            "hasPois": false
+        },
+        {
+            "version": "5_21",
+            "chapter": 1,
+            "season": 5,
+            "patch": "chapter_1/season_5/5_21",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=5_21",
+            "hasPois": false
+        },
+        {
+            "version": "5_20",
+            "chapter": 1,
+            "season": 5,
+            "patch": "chapter_1/season_5/5_20",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=5_20",
+            "hasPois": false
+        },
+        {
+            "version": "5_10",
+            "chapter": 1,
+            "season": 5,
+            "patch": "chapter_1/season_5/5_10",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=5_10",
+            "hasPois": false
+        },
+        {
+            "version": "4_5",
+            "chapter": 1,
+            "season": 4,
+            "patch": "chapter_1/season_4/4_5",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=4_5",
+            "hasPois": false
+        },
+        {
+            "version": "4_4",
+            "chapter": 1,
+            "season": 4,
+            "patch": "chapter_1/season_4/4_4",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=4_4",
+            "hasPois": false
+        },
+        {
+            "version": "4_2",
+            "chapter": 1,
+            "season": 4,
+            "patch": "chapter_1/season_4/4_2",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=4_2",
+            "hasPois": false
+        },
+        {
+            "version": "4_1",
+            "chapter": 1,
+            "season": 4,
+            "patch": "chapter_1/season_4/4_1",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=4_1",
+            "hasPois": false
+        },
+        {
+            "version": "4_0",
+            "chapter": 1,
+            "season": 4,
+            "patch": "chapter_1/season_4/4_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=4_0",
+            "hasPois": false
+        },
+        {
+            "version": "3_5_0",
+            "chapter": 1,
+            "season": 3,
+            "patch": "chapter_1/season_3/3_5_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=3_5_0",
+            "hasPois": false
+        },
+        {
+            "version": "3_3_0",
+            "chapter": 1,
+            "season": 3,
+            "patch": "chapter_1/season_3/3_3_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=3_3_0",
+            "hasPois": false
+        },
+        {
+            "version": "3_2_0",
+            "chapter": 1,
+            "season": 3,
+            "patch": "chapter_1/season_3/3_2_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=3_2_0",
+            "hasPois": false
+        },
+        {
+            "version": "3_1_0",
+            "chapter": 1,
+            "season": 3,
+            "patch": "chapter_1/season_3/3_1_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=3_1_0",
+            "hasPois": false
+        },
+        {
+            "version": "2_5_0",
+            "chapter": 1,
+            "season": 2,
+            "patch": "chapter_1/season_2/2_5_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=2_5_0",
+            "hasPois": false
+        },
+        {
+            "version": "2_4_0",
+            "chapter": 1,
+            "season": 2,
+            "patch": "chapter_1/season_2/2_4_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=2_4_0",
+            "hasPois": false
+        },
+        {
+            "version": "2_3_0",
+            "chapter": 1,
+            "season": 2,
+            "patch": "chapter_1/season_2/2_3_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=2_3_0",
+            "hasPois": false
+        },
+        {
+            "version": "2_2_0",
+            "chapter": 1,
+            "season": 2,
+            "patch": "chapter_1/season_2/2_2_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=2_2_0",
+            "hasPois": false
+        },
+        {
+            "version": "2_1_0",
+            "chapter": 1,
+            "season": 2,
+            "patch": "chapter_1/season_2/2_1_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=2_1_0",
+            "hasPois": false
+        },
+        {
+            "version": "1_11",
+            "chapter": 1,
+            "season": 1,
+            "patch": "chapter_1/season_1/1_11",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=1_11",
+            "hasPois": false
+        },
+        {
+            "version": "1_9_0",
+            "chapter": 1,
+            "season": 1,
+            "patch": "chapter_1/season_1/1_9_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=1_9_0",
+            "hasPois": false
+        },
+        {
+            "version": "1_8_2",
+            "chapter": 1,
+            "season": 1,
+            "patch": "chapter_1/season_1/1_8_2",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=1_8_2",
+            "hasPois": false
+        },
+        {
+            "version": "1_8_0",
+            "chapter": 1,
+            "season": 1,
+            "patch": "chapter_1/season_1/1_8_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=1_8_0",
+            "hasPois": false
+        },
+        {
+            "version": "1_6_0",
+            "chapter": 1,
+            "season": 1,
+            "patch": "chapter_1/season_1/1_6_0",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=1_6_0",
+            "hasPois": false
+        },
+        {
+            "version": "32-week-3",
+            "chapter": 5,
+            "season": 5,
+            "patch": "chapter_5/season_5/32-week-3",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=32-week-3",
+            "hasPois": false
+        },
+        {
+            "version": "32-week-4",
+            "chapter": 5,
+            "season": 5,
+            "patch": "chapter_5/season_5/32-week-4",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=32-week-4",
+            "hasPois": false
+        },
+        {
+            "version": "32-week-2",
+            "chapter": 5,
+            "season": 5,
+            "patch": "chapter_5/season_5/32-week-2",
+            "releaseDate": null,
+            "hasImage": true,
+            "imageUrl": "/api/v1/map/image?version=32-week-2",
+            "hasPois": false
+        },
+        {
+            "version": "3.13",
+            "chapter": 1,
+            "season": 0,
+            "patch": "chapter_1/season_0/3.13",
+            "releaseDate": null,
+            "hasImage": false,
+            "imageUrl": null,
+            "hasPois": false
+        }
+    ]
+}
