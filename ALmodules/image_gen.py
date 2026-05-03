@@ -56,6 +56,23 @@ def _rarity_colors(rarity: str) -> tuple[tuple[int,int,int], tuple[int,int,int]]
     return _RARITY_COLORS.get(rarity.lower(), ((184, 184, 184), (92, 92, 92)))
 
 
+def _wm_xy(pos: str, img_w: int, img_h: int,
+           text_w: int, text_h: int, margin: int = 12) -> tuple[int, int]:
+    """Convert a position label to (x, y) pixel coordinates for watermark."""
+    p = (pos or "top-left").lower().replace(" ", "-")
+    if p == "top-right":
+        return (img_w - text_w - margin, margin)
+    if p == "top-center":
+        return ((img_w - text_w) // 2, margin)
+    if p == "bottom-left":
+        return (margin, img_h - text_h - margin)
+    if p == "bottom-right":
+        return (img_w - text_w - margin, img_h - text_h - margin)
+    if p == "bottom-center":
+        return ((img_w - text_w) // 2, img_h - text_h - margin)
+    return (margin, margin)   # default: top-left
+
+
 class CardStyle(str, Enum):
     STANDARD = "standard"
     CLEAN    = "clean"
@@ -166,7 +183,8 @@ def get_source_tag(item: dict, build: str = "") -> str:
 
 def _render_standard(img: Image.Image, item: dict,
                       font_main: str, font_side: str,
-                      watermark: str, show_source: bool, build: str) -> Image.Image:
+                      watermark: str, show_source: bool, build: str,
+                      watermark_pos: str = "top-left") -> Image.Image:
     """Standard style: centred name + description + type text."""
     draw  = ImageDraw.Draw(img)
     name  = (item.get("name") or "TBD").upper()
@@ -194,14 +212,17 @@ def _render_standard(img: Image.Image, item: dict,
 
     if watermark:
         wm_font = load_font(font_main, 25)
-        draw.text((10, 9), watermark, font=wm_font, fill="white")
+        tw, th  = draw_text_size(draw, watermark, wm_font)
+        draw.text(_wm_xy(watermark_pos, img.width, img.height, tw, th),
+                  watermark, font=wm_font, fill="white")
 
     return img
 
 
 def _render_clean(img: Image.Image, item: dict,
                   font_main: str, font_side: str,
-                  watermark: str, show_source: bool, build: str) -> Image.Image:
+                  watermark: str, show_source: bool, build: str,
+                  watermark_pos: str = "top-left") -> Image.Image:
     """Clean style: left-aligned name + type."""
     draw  = ImageDraw.Draw(img)
     name  = item.get("name") or "TBD"
@@ -218,14 +239,17 @@ def _render_clean(img: Image.Image, item: dict,
 
     if watermark:
         wm_font = load_font(font_main, 25)
-        draw.text((30, 30), watermark, font=wm_font, fill="white")
+        tw, th  = draw_text_size(draw, watermark, wm_font)
+        draw.text(_wm_xy(watermark_pos, img.width, img.height, tw, th),
+                  watermark, font=wm_font, fill="white")
 
     return img
 
 
 def _render_new(img: Image.Image, item: dict,
                 font_main: str, font_side: str,
-                watermark: str, show_source: bool, build: str) -> Image.Image:
+                watermark: str, show_source: bool, build: str,
+                watermark_pos: str = "top-left") -> Image.Image:
     """
     'New' style: large centred name + description + set text.
     Mirrors the newcnew_fnbrapi / newiconsfnapi logic from the original.
@@ -271,7 +295,9 @@ def _render_new(img: Image.Image, item: dict,
     # --- Watermark ---
     if watermark:
         wm_font = load_font(font_main, 25)
-        draw.text((10, 9), watermark, font=wm_font, fill="white")
+        tw, th  = draw_text_size(draw, watermark, wm_font)
+        draw.text(_wm_xy(watermark_pos, img.width, img.height, tw, th),
+                  watermark, font=wm_font, fill="white")
         wm_y = 30
     else:
         wm_y = 10
@@ -288,7 +314,8 @@ def _render_new(img: Image.Image, item: dict,
 
 def _render_cataba(img: Image.Image, item: dict,
                    font_main: str, font_side: str,
-                   watermark: str, show_source: bool, build: str) -> Image.Image:
+                   watermark: str, show_source: bool, build: str,
+                   watermark_pos: str = "top-left") -> Image.Image:
     """
     'Cataba' style: centred name + description (upper-cased) + backend type badge.
     Matches the catabaicons / catabasearch logic.
@@ -372,6 +399,7 @@ def _generate_large_card(
     watermark: str,
     show_source: bool,
     build: str,
+    watermark_pos: str = "top-left",
 ) -> Image.Image:
     """
     Build a 1793×1080 large-style cosmetic card matching the original AutoLeak design.
@@ -556,7 +584,9 @@ def _generate_large_card(
     # ── 10. Watermark ─────────────────────────────────────────────────────────
     if watermark:
         wm_font = load_font(burbank_black, 30)
-        draw.text((30, 12), watermark, font=wm_font, fill=(255, 255, 255, 180))
+        tw, th  = draw_text_size(draw, watermark, wm_font)
+        draw.text(_wm_xy(watermark_pos, canvas.width, canvas.height, tw, th),
+                  watermark, font=wm_font, fill=(255, 255, 255, 180))
 
     # ── 11. Variants section (up to 6 style previews) ─────────────────────────
     variants_list = item.get("variants") or []
@@ -624,26 +654,29 @@ def generate_card(
     watermark: str = "",
     show_source: bool = True,
     build: str = "",
+    watermark_pos: str = "top-left",
 ) -> None:
     """
     Generate a styled cosmetic card image and write it to out_path.
 
     Parameters
     ----------
-    item       : Fortnite-API cosmetic item dict
-    icon_url   : URL of the cosmetic's icon/featured image
-    out_path   : Where to save the finished PNG
-    icon_type  : One of 'standard', 'clean', 'new', 'cataba', 'large'
-    font_main  : Path to primary font (None → PIL default)
-    font_side  : Path to secondary font (None → PIL default)
-    watermark  : Text watermark drawn top-left
-    show_source: Whether to draw the gameplay source tag
-    build      : Fortnite version label (used in source tag)
+    item          : Fortnite-API cosmetic item dict
+    icon_url      : URL of the cosmetic's icon/featured image
+    out_path      : Where to save the finished PNG
+    icon_type     : One of 'standard', 'clean', 'new', 'cataba', 'large'
+    font_main     : Path to primary font (None → PIL default)
+    font_side     : Path to secondary font (None → PIL default)
+    watermark     : Text watermark string
+    show_source   : Whether to draw the gameplay source tag
+    build         : Fortnite version label (used in source tag)
+    watermark_pos : One of 'top-left', 'top-right', 'top-center',
+                    'bottom-left', 'bottom-right', 'bottom-center'
     """
     # ── Large style: completely different canvas size — handle separately ────────
     if icon_type == CardStyle.LARGE:
         img = _generate_large_card(item, icon_url, font_main, font_side,
-                                   watermark, show_source, build)
+                                   watermark, show_source, build, watermark_pos)
         os.makedirs(os.path.dirname(out_path) if os.path.dirname(out_path) else ".", exist_ok=True)
         img.save(out_path)
         return
@@ -678,7 +711,8 @@ def generate_card(
         CardStyle.CATABA:   _render_cataba,
     }
     renderer = style_renderers.get(icon_type, _render_new)
-    img = renderer(img, item, font_main, font_side, watermark, show_source, build)
+    img = renderer(img, item, font_main, font_side, watermark, show_source, build,
+                   watermark_pos)
 
     # ── 4. Save ───────────────────────────────────────────────────────────────
     os.makedirs(os.path.dirname(out_path) if os.path.dirname(out_path) else ".", exist_ok=True)
