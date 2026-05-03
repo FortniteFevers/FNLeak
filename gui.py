@@ -11,8 +11,8 @@ import io
 import json
 import math
 import os
-import re
 import queue
+import re
 import random
 import subprocess
 import webbrowser
@@ -98,7 +98,6 @@ RARITY_COLORS = {
 }
 
 PAK_REGEX = re.compile(r'pakchunk\d{4}-WindowsClient\.pak')
-
 
 # ── console redirector ─────────────────────────────────────────────────────────
 class _ConsoleRedirector:
@@ -750,6 +749,7 @@ class GeneratePage(_Page):
                     item=item, icon_url=url, out_path=out_path,
                     icon_type=icon_type, font_main=font_main, font_side=font_side,
                     watermark=watermark, show_source=cfg["showitemsource"], build=build,
+                    watermark_pos=cfg.get("watermarkPosition", "Top Left").lower().replace(" ", "-"),
                 )
                 ok += 1
                 pct = idx / len(items)
@@ -900,6 +900,7 @@ class SearchPage(_Page):
                                         font=ctk.CTkFont(size=13),
                                         width=280, height=280)
         self._img_label.grid(row=0, column=0, padx=20, pady=20, sticky="n")
+        self._img_label.bind("<Button-1>", lambda _: self._open_fullscreen())
 
         # Info (right of detail)
         info = ctk.CTkFrame(detail, fg_color="transparent")
@@ -1085,6 +1086,7 @@ class SearchPage(_Page):
                 icon_type=cfg["iconType"], font_main=resolve_font(cfg["imageFont"]),
                 font_side=resolve_font(cfg["sideFont"]),
                 watermark=cfg["watermark"], show_source=cfg["showitemsource"],
+                watermark_pos=cfg.get("watermarkPosition", "Top Left").lower().replace(" ", "-"),
             )
             self._last_item = item
             self._last_path = out_path
@@ -1128,18 +1130,23 @@ class SearchPage(_Page):
             self._thumb_ref = ctkimg
             self._img_label.configure(image=ctkimg, text="", width=disp_w, height=disp_h,
                                       cursor="hand2")
-            self._img_label.bind("<Button-1>", lambda _: self._open_fullscreen())
             self._open_btn.configure(state="normal")
         except Exception:
             pass
 
     def _open_fullscreen(self):
+        if getattr(self, "_preview_win_open", False):
+            return
+        self._preview_win_open = True
+
         path = self._last_path
         if not path or not os.path.exists(path):
+            self._preview_win_open = False
             return
         try:
             pil = PILImage.open(path).convert("RGB")
         except Exception:
+            self._preview_win_open = False
             return
 
         win = ctk.CTkToplevel(self)
@@ -1165,7 +1172,13 @@ class SearchPage(_Page):
         ctk.CTkButton(win, text="Close", width=100, height=32,
                       fg_color=C["card"], hover_color=C["border"],
                       command=win.destroy).pack(pady=6)
-        win.bind("<Escape>", lambda _: win.destroy())
+
+        def _on_close():
+            self._preview_win_open = False
+            win.destroy()
+
+        win.protocol("WM_DELETE_WINDOW", _on_close)
+        win.bind("<Escape>", lambda _: _on_close())
 
     # ── actions ───────────────────────────────────────────────────────────────
     def _copy_id(self):
@@ -3027,7 +3040,10 @@ class SettingsPage(_Page):
                 ("name",        "Bot Name",         "entry"),
                 ("footer",      "Tweet Footer",     "entry"),
                 ("language",    "Language",         "option", ["en","de","fr","es","es-419","it","ja","ko","pl","pt-BR","ru","tr","ar","zh-CN","zh-Hant"]),
-                ("watermark",   "Watermark Text",   "entry"),
+                ("watermark",        "Watermark Text",     "entry"),
+                ("watermarkPosition","Watermark Position", "option",
+                 ["Top Left", "Top Right", "Top Center",
+                  "Bottom Left", "Bottom Right", "Bottom Center"]),
                 ("iconType",    "Icon Style",       "option", ["new","cataba","standard","clean","large"]),
                 ("useFeaturedIfAvailable", "Use Featured Image", "bool"),
                 ("showitemsource",         "Show Item Source",   "bool"),
