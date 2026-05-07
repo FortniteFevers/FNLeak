@@ -614,6 +614,22 @@ class GeneratePage(_Page):
         )
         self._gen_btn.pack(side="right", padx=4)
 
+        self._source_var = ctk.StringVar(value="All New Cosmetics")
+        self._pak_map: dict[str, str] = {}   # display label → pak_id (e.g. "1001")
+        self._source_menu = ctk.CTkOptionMenu(
+            top,
+            variable=self._source_var,
+            values=["All New Cosmetics"],
+            width=190, height=32,
+            fg_color=C["card"], button_color=C["border"],
+            button_hover_color=C["input_bg"],
+            text_color=C["text"],
+            dropdown_fg_color=C["card"],
+            dropdown_hover_color=C["border"],
+            dropdown_text_color=C["text"],
+        )
+        self._source_menu.pack(side="right", padx=4)
+
         # ── progress ──────────────────────────────────────────────────────────
         prog_frame = ctk.CTkFrame(self, fg_color="transparent")
         prog_frame.pack(fill="x", padx=24, pady=4)
@@ -645,6 +661,31 @@ class GeneratePage(_Page):
             text_color=C["text_dim"], font=ctk.CTkFont(size=13)
         ).grid(row=0, column=0, columnspan=7, pady=40)
 
+    # ── lifecycle ─────────────────────────────────────────────────────────────
+
+    def on_show(self):
+        self._refresh_source_menu()
+
+    def _refresh_source_menu(self):
+        """Rebuild the source dropdown from the currently decrypted dynamic paks."""
+        home = self.app.pages.get("dashboard")
+        dyn_keys = getattr(home, "_aes_dynamic_keys", []) if home else []
+
+        self._pak_map = {}
+        opts = ["All New Cosmetics"]
+        for k in dyn_keys:
+            fname = k.get("pakFilename", "")
+            m = re.search(r'pakchunk(\d+)', fname)
+            if m:
+                pak_id = m.group(1)
+                label  = f"pakchunk{pak_id}"
+                self._pak_map[label] = pak_id
+                opts.append(label)
+
+        self._source_menu.configure(values=opts)
+        if self._source_var.get() not in opts:
+            self._source_var.set("All New Cosmetics")
+
     # ── internal ──────────────────────────────────────────────────────────────
 
     def _clear_grid(self):
@@ -652,6 +693,17 @@ class GeneratePage(_Page):
             w.destroy()
         self._grid_count = 0
         self._thumb_cache.clear()
+
+    def _show_empty_grid(self, msg: str = "No cosmetics detected."):
+        for w in self._grid_frame.winfo_children():
+            w.destroy()
+        ctk.CTkLabel(
+            self._grid_frame,
+            text=msg,
+            text_color=C["text_dim"],
+            font=ctk.CTkFont(size=14),
+            justify="center",
+        ).grid(row=0, column=0, columnspan=7, pady=80)
 
     def _add_thumb(self, path: str):
         """Add a thumbnail card to the grid (must be called from main thread)."""
@@ -715,25 +767,53 @@ class GeneratePage(_Page):
         do_merge  = cfg["MergeImages"]
         auto_tw   = cfg["AutoTweetMerged"]
 
-        self.app.log("Fetching new cosmetics…")
-        try:
-            resp = requests.get(f"{FORTNITE_API}/v2/cosmetics/new",
-                                params={"language": lang}, timeout=15)
-            resp.raise_for_status()
-        except Exception as e:
-            self.app.log(f"API error: {e}", error=True)
-            self.after(0, self._reset_btn)
-            return
+        source = self._source_var.get()
+        pak_id = self._pak_map.get(source)   # None → "All New Cosmetics"
 
-        data  = resp.json().get("data") or {}
-        items = data.get("items", {}).get("br", [])
-        build_raw = data.get("build", "")
-        try:
-            build = build_raw.split("++Fortnite+Release-")[1].split("-CL-")[0]
-        except Exception:
-            build = build_raw
+        if pak_id:
+            # ── dynamic pak branch ────────────────────────────────────────────
+            self.app.log(f"Fetching cosmetics for {source}…")
+            try:
+                resp = requests.get(
+                    f"{FORTNITE_API}/v2/cosmetics/br/search/all",
+                    params={"dynamicPakId": pak_id, "language": lang},
+                    timeout=15,
+                )
+                if resp.status_code == 404:
+                    self.app.log(f"{source} — no cosmetics found (pak may not contain BR items)")
+                    self.after(0, self._reset_btn)
+                    self.after(0, lambda s=source: self._show_empty_grid(
+                        f"No cosmetics found for {s}.\nThis pak may not contain Battle Royale items."))
+                    return
+                resp.raise_for_status()
+            except Exception as e:
+                self.app.log(f"API error: {e}", error=True)
+                self.after(0, self._reset_btn)
+                return
+            raw = resp.json().get("data") or []
+            items = raw if isinstance(raw, list) else []
+            build = source   # use pak label as the "build" tag on cards
+            self.app.log(f"{source} — {len(items)} cosmetics found")
+        else:
+            # ── new cosmetics branch (default) ────────────────────────────────
+            self.app.log("Fetching new cosmetics…")
+            try:
+                resp = requests.get(f"{FORTNITE_API}/v2/cosmetics/new",
+                                    params={"language": lang}, timeout=15)
+                resp.raise_for_status()
+            except Exception as e:
+                self.app.log(f"API error: {e}", error=True)
+                self.after(0, self._reset_btn)
+                return
+            data  = resp.json().get("data") or {}
+            items = data.get("items", {}).get("br", [])
+            build_raw = data.get("build", "")
+            try:
+                build = build_raw.split("++Fortnite+Release-")[1].split("-CL-")[0]
+            except Exception:
+                build = build_raw
+            self.app.log(f"Patch {build} — {len(items)} new cosmetics")
 
-        self.app.log(f"Patch {build} — {len(items)} new cosmetics")
         delete_icons()
 
         ok = 0
@@ -765,6 +845,8 @@ class GeneratePage(_Page):
         self.after(0, lambda: self._prog_bar.set(1.0))
         self.after(0, lambda: self._prog_label.configure(text=f"{ok} done",
                                                           text_color=C["green"]))
+        if ok == 0:
+            self.after(0, lambda: self._show_empty_grid("No cosmetics detected."))
 
         if do_merge and ok > 0:
             self.app.log("Merging images…")
