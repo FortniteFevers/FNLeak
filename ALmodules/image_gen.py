@@ -25,6 +25,10 @@ SIZE        = 512
 RESAMPLE    = Image.LANCZOS        # Was PIL.Image.ANTIALIAS (removed in Pillow 10)
 FALLBACK_BG = (50, 50, 80, 255)   # Dark blue-grey RGBA
 
+# ── placeholder cache ─────────────────────────────────────────────────────────
+# Downloaded once on first use, reused for every card that needs it.
+_placeholder_cache: dict[str, Image.Image] = {}   # url → RGBA image at SIZE×SIZE
+
 LARGE_W = 1793
 LARGE_H = 1080
 
@@ -119,15 +123,60 @@ def load_font(path: Optional[str], size: int) -> ImageFont.FreeTypeFont | ImageF
 
 # ── icon downloader ───────────────────────────────────────────────────────────
 
-def fetch_icon(url: str) -> Image.Image:
-    """Download and return a 512×512 RGBA icon image."""
+def _is_api_placeholder(img: Image.Image) -> bool:
+    """Detect the fortnite-api.com pink/magenta placeholder by visual signature.
+    The placeholder has a distinctive high ratio of magenta pixels (high R, high B, low G)."""
+    rgb = img.convert("RGB")
+    w, h = rgb.size
+    samples = [rgb.getpixel((x, y))
+               for x in range(0, w, 8) for y in range(0, h, 8)]
+    if not samples:
+        return False
+    magenta = sum(1 for r, g, b in samples if r > 160 and b > 160 and g < 80)
+    return magenta / len(samples) > 0.08   # >8% magenta = placeholder
+
+
+_LOCAL_PLACEHOLDER = os.path.join("assets", "fnleakplaceholder.png")
+
+
+def _get_cached_placeholder() -> Optional[Image.Image]:
+    """Load the local placeholder image from assets/, caching it after first read."""
+    key = "local"
+    if key in _placeholder_cache:
+        return _placeholder_cache[key]
+    try:
+        img = Image.open(_LOCAL_PLACEHOLDER).convert("RGBA")
+        img = img.resize((SIZE, SIZE), RESAMPLE)
+        _placeholder_cache[key] = img
+        return img
+    except Exception:
+        return None
+
+
+def fetch_icon(url: str, placeholder_url: str = "") -> Image.Image:
+    """Download and return a 512×512 RGBA icon image.
+    If the fetched image is the fortnite-api.com pink placeholder (or fetch fails),
+    substitutes the local assets/fnleakplaceholder.png instead."""
+    img = None
     try:
         resp = requests.get(url, timeout=15)
         resp.raise_for_status()
         img = Image.open(io.BytesIO(resp.content)).convert("RGBA")
-        return img.resize((SIZE, SIZE), RESAMPLE)
-    except Exception as e:
-        raise RuntimeError(f"Failed to fetch icon from {url}: {e}") from e
+    except Exception:
+        pass
+
+    # Swap out if it looks like the API placeholder
+    if img is not None and _is_api_placeholder(img):
+        img = None
+
+    # Fall back to local placeholder file
+    if img is None:
+        img = _get_cached_placeholder()
+
+    if img is None:
+        return Image.new("RGBA", (SIZE, SIZE), FALLBACK_BG)
+
+    return img.resize((SIZE, SIZE), RESAMPLE)
 
 
 # ── rarity background loader ──────────────────────────────────────────────────
@@ -400,6 +449,7 @@ def _generate_large_card(
     show_source: bool,
     build: str,
     watermark_pos: str = "top-left",
+    placeholder_url: str = "",
 ) -> Image.Image:
     """
     Build a 1793×1080 large-style cosmetic card matching the original AutoLeak design.
@@ -434,15 +484,11 @@ def _generate_large_card(
 
     # ── 1. Download icon — always prefer featured for full-body shots ─────────
     # For skins/backpacks the featured image shows the full character;
-    # fall back to icon_url if featured isn't available.
-    images     = item.get("images") or {}
-    best_url   = images.get("featured") or images.get("icon") or icon_url
-    try:
-        resp = requests.get(best_url, timeout=15)
-        resp.raise_for_status()
-        icon_img = Image.open(io.BytesIO(resp.content)).convert("RGBA").resize((ICON_SZ, ICON_SZ), RESAMPLE)
-    except Exception:
-        icon_img = Image.new("RGBA", (ICON_SZ, ICON_SZ), FALLBACK_BG)
+    # fall back to icon_url, then placeholder if needed.
+    images   = item.get("images") or {}
+    best_url = images.get("featured") or images.get("icon") or icon_url
+    _raw     = fetch_icon(best_url)
+    icon_img = _raw.resize((ICON_SZ, ICON_SZ), RESAMPLE)
 
     # ── 2. Cataba rarity background at 1083×1083 ─────────────────────────────
     def _try_open_cataba(name_: str) -> Optional[Image.Image]:
@@ -596,31 +642,16 @@ def _generate_large_card(
             if o.get("name") not in ("DEFAULT", "Stage1")
         ]
         if opts:
-            # Dark semi-transparent background for the whole variants area
-            var_bg = Image.new("RGBA", (LARGE_W, LARGE_H), (0, 0, 0, 0))
-            ImageDraw.Draw(var_bg).rectangle(
-                [0, 330, 575, 758], fill=(18, 16, 26, 215)
-            )
-            canvas.paste(var_bg, (0, 0), var_bg)
             draw = ImageDraw.Draw(canvas)
 
-            # "STYLES" header
+            # "STYLES" label + count — no extra background, card panel shows through
             styles_font = load_font(burbank_italic, 28)
-            draw.text((35, 354), "STYLES", font=styles_font, fill=(200, 200, 200))
+            count_font  = load_font(burbank_italic, 28)
+            draw.text((35, 354), "STYLES", font=styles_font, fill=(220, 220, 220))
+            count_str = str(len(opts))
+            draw.text((165, 354), count_str, font=count_font, fill=(130, 130, 130))
 
-            # Variant count + "+" circle
-            count_font = load_font(burbank_italic, 35)
-            draw.text((240, 342), str(len(opts)), font=count_font, fill=(153, 153, 153))
-            cx, cy, r = 207, 360, 20
-            draw.ellipse([cx - r, cy - r, cx + r, cy + r],
-                         fill=(45, 43, 55), outline=(170, 170, 170), width=2)
-            try:
-                plus_f = ImageFont.load_default(size=26)
-            except TypeError:
-                plus_f = ImageFont.load_default()
-            draw.text((cx, cy), "+", font=plus_f, fill=(190, 190, 190), anchor="mm")
-
-            # 3-column × 2-row grid of variant preview images
+            # 3-column × 2-row grid — paste images directly with alpha (no RGB box)
             GRID = [
                 (24, 390), (204, 390), (384, 390),
                 (24, 570), (204, 570), (384, 570),
@@ -633,9 +664,7 @@ def _generate_large_card(
                     vr   = requests.get(v_url, timeout=10)
                     vimg = Image.open(io.BytesIO(vr.content)) \
                                .resize((157, 157), RESAMPLE).convert("RGBA")
-                    vbox = Image.new("RGB", (157, 157), (33, 31, 32))
-                    vbox.paste(vimg, (0, 0), vimg)
-                    canvas.paste(vbox, (gx, gy))
+                    canvas.paste(vimg, (gx, gy), vimg)
                 except Exception:
                     pass
 
@@ -655,6 +684,7 @@ def generate_card(
     show_source: bool = True,
     build: str = "",
     watermark_pos: str = "top-left",
+    placeholder_url: str = "",
 ) -> None:
     """
     Generate a styled cosmetic card image and write it to out_path.
@@ -676,7 +706,8 @@ def generate_card(
     # ── Large style: completely different canvas size — handle separately ────────
     if icon_type == CardStyle.LARGE:
         img = _generate_large_card(item, icon_url, font_main, font_side,
-                                   watermark, show_source, build, watermark_pos)
+                                   watermark, show_source, build, watermark_pos,
+                                   placeholder_url=placeholder_url)
         os.makedirs(os.path.dirname(out_path) if os.path.dirname(out_path) else ".", exist_ok=True)
         img.save(out_path)
         return
