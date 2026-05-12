@@ -2,8 +2,6 @@
 
 > **Open-source. Locally run. Built for the community.**
 
-![Dashboard](screenshots/FNLeak_Dashboard.png)
-
 ---
 
 ## The Story
@@ -20,7 +18,7 @@ Man, I wish I had this program years ago. I created it for me. That small kid wi
 
 ## What is FNLeak?
 
-FNLeak is a full-featured Fortnite datamining and content creation tool with a polished desktop GUI. Everything runs **locally on your machine** — no cloud subscription, no account required, no data sent anywhere except to the public Fortnite APIs it uses. Generate cosmetic cards, browse the Item Shop, look up player stats, view historical maps, and more — all from one app.
+FNLeak is a full-featured Fortnite datamining and content creation tool with a polished desktop GUI. Everything runs **locally on your machine** — no cloud subscription, no account required, no data sent anywhere except to the public Fortnite APIs it uses. Generate cosmetic cards, browse the Item Shop, look up player stats, view historical maps, browse weapons, run a loot simulator, and more — all from one app.
 
 ---
 
@@ -33,12 +31,16 @@ FNLeak is a full-featured Fortnite datamining and content creation tool with a p
 | Distribution | Run from source only | Standalone `.app` / `.exe` |
 | Pillow support | Broke on Pillow 10+ | Pillow 10/11 fully compatible |
 | Twitter/X | Tweepy v1 `update_with_media` (deprecated) | Tweepy v4, v2 API |
-| Item Shop | Basic grid image | Section-by-section with NEW/LEAVING dates, V-Bucks icons |
-| Jam Tracks | Not supported | Full Jam Tracks browser with Spotify + Apple Music links |
-| Player Stats | Not supported | Full stats card image generation |
+| Item Shop | Basic grid image | Section-by-section with NEW/LEAVING dates, Load Past Shop, dated folders |
+| Jam Tracks | Not supported | Full browser with Spotify + Apple Music links |
+| Player Stats | Not supported | Full stats card generation via fortnite-api.com (API key flow built in) |
 | Map Viewer | Not supported | Current + all historical season maps with zoom/pan |
 | Game Modes | Not supported | Full playlist browser with thumbnails |
-| Outdated API's | Fortntieapi.io, BenBot, no longer supported. | Removed — `fortnite-api.com` only |
+| Weapons | Not supported | Full weapon browser + Loot Simulator + Random Loadout Generator |
+| Merger | Basic grid | FModel-style picker with visual selection, custom background, watermark, preview |
+| Creator Code | Not supported | SAC lookup + Island Analytics |
+| Cache | None | Per-folder size stats, clear with confirmation dialog |
+| Outdated APIs | FortniteAPI.io, BenBot | Removed — `fortnite-api.com` only |
 | Monitors | Stack overflow risk (recursive retries) | Stable background threads |
 | Code size | ~3,100 lines, heavily duplicated | Fully modular |
 
@@ -46,57 +48,85 @@ FNLeak is a full-featured Fortnite datamining and content creation tool with a p
 
 ## Features
 
+### Dashboard
+Live status indicators for all APIs (fortnite-api.com, Fortnite Game Services, FortniteGG, Twitter/X). Quick-action buttons to jump to any page. Current AES key display with one-click copy. Live Fortnite news feed.
+
 ### Cosmetic Generator
 Detect a new Fortnite update and auto-generate styled card images for every new cosmetic. Supports five card styles:
-- **New** — Large centred name and description (default)
+- **New** — Large centred name and description
 - **Cataba** — Fortnite-style layered composite with backend type badge
 - **Standard** — Centred name, description, and item ID
 - **Clean** — Left-aligned minimal style
-- **Large** — Featured image layout
-![Cosmetic Generator](screenshots/cosmeticgen.jpeg)
-*icon type used: "Cataba"*
+- **Large** — Featured image with variant styles section
+
+Cards that have no official image automatically fall back to a custom local placeholder (`assets/fnleakplaceholder.png`) instead of the fortnite-api.com pink placeholder.
 
 ### Cosmetic Search
-Search any cosmetic by name or ID. Click the thumbnail to open a fullscreen preview. Generate and save the card in any style.
+Search any cosmetic by name or ID. Click the thumbnail to open a fullscreen preview. Generate and save the card in any style directly from the search result.
 
 ### Item Shop Generator
 Generate a full section-by-section image of the current Item Shop with:
+- **Date header** at the top of the scroll view showing which shop is loaded (e.g. *May 12, 2024*)
 - **Section headers** showing whether a set is **NEW** or **LEAVING** (with exact date/time popup on click)
 - **V-Bucks icon** on every item price
 - **Real-time progress bar** with estimated time remaining during generation
-- **Copy button** per section — one click to copy that section's image
-![Item Shop](screenshots/shop_generation.png)
+- **Copy button** per section — one click to copy that section's image to your clipboard
+- **Dated subfolders** — each generation saves to `merged/YYYY-MM-DD/` automatically
+- **Load Past Shop** — pick any previously generated date from a dropdown and reload it instantly
+- **Open Folder** — opens the folder for the currently displayed shop date
 
 ### Jam Tracks
 Browse all Jam Tracks currently in the shop with album art, artist info, and V-Buck price. Each track has:
-- **Spotify** and **Apple Music** direct links
-- **Copy Post** button — opens a popup with pre-formatted social media text and buttons to copy the text or album art image separately
-![Jam Tracks](screenshots/jam_tracks.png)
+- **Spotify** and **Apple Music** direct search links
+- **Copy Post** button — pre-formatted social media text + copy text or album art image separately
 
 ### Player Stats
-Look up any Fortnite player's lifetime stats by Epic username. Generates a full styled stats card image (1500×680) showing:
+Look up any Fortnite player's lifetime stats by Epic username. Requires a free API key from [dash.fortnite-api.com](https://dash.fortnite-api.com) — the app walks you through setup with a first-visit popup and an inline banner until the key is configured. Generates a full styled stats card (1500×680) showing:
 - Overall stats: K/D, Win Rate, Kills, KPM, Deaths, Matches, Wins
-- Solo / Duo / Squad breakdowns
-- Battle Pass level and progress
-- LTM stats
-- Burbank font rendering with a win-rate progress bar
+- Solo / Duo / Squad / LTM breakdowns
+- Battle Pass level and progress bar
+- Burbank font rendering
 
-Buttons: **Open Image**, **Copy Image**, **Tweet Stats**
-![Player Stats](screenshots/fortnite_stats.png)
+Handles **private stats** with a clear message rather than a generic error. Buttons: **Open Image**, **Copy Image**, **Tweet Stats**.
 
 ### Map Viewer
-View the current season's live map or any historical season map (Chapter 1 Season 1 all the way through Chapter 7 Season 2, including Mini Seasons). Click the map to open a zoom window with:
+View the current season's live map or any historical season map (Chapter 1 Season 1 through the latest season, including Mini Seasons). Click the map to open a zoom window with:
 - **+ / −** zoom buttons
 - **◀ ▲ ▼ ▶** pan controls
 - **Fit** button to reset the view
 - Scroll wheel and drag support
-![Map Viewer](screenshots/map_viewer.png)
 
 ### Game Modes
 Browse all current Fortnite playlists with thumbnails and descriptions.
 
+### Weapons
+Full weapon browser with search and rarity filtering. Two sub-tabs:
+
+**Weapons tab** — Browse all current BR weapons with images, DPS, damage, fire rate, magazine size, and reload time. Click any weapon for a detail popup.
+
+**Loot Tools tab:**
+- **Loot Simulator** — Roll a randomised loot pool with adjustable per-rarity weights. See results as card images with rarity colors.
+- **Random Loadout Generator** — Generate a random full loadout (Assault Rifle, Shotgun, SMG/Pistol, Sniper/Explosive, Wild Card) with weighted rarity distribution and weapon stats.
+
+### Merger
+FModel-style image picker for building custom cosmetic grids:
+- Browse and pick images from the `icons/` folder (or any folder)
+- **Visual selection indicator** — checkmark and colored border on selected images
+- Select All / Deselect All
+- Adjustable column count and scale
+- Light / Dark / Custom background color
+- Optional watermark image overlay
+- Live preview before export
+- One-click merge and save
+
 ### Creator Code
 Look up any Support-a-Creator code and view earnings stats.
+
+**Island Analytics** (built into the same page) — Enter any Fortnite Creative island code (auto-formats as XXXX-XXXX-XXXX) and view:
+- Island title, description, and creator
+- Play count and favorites
+- Thumbnail image
+- Version and last-updated date
 
 ### Monitors
 Set up background watchers that auto-run and optionally tweet when triggered:
@@ -110,10 +140,16 @@ Set up background watchers that auto-run and optionally tweet when triggered:
 Connect your Twitter/X developer account and tweet generated images directly from the app. Supports tweeting cosmetic cards, merged grids, shop sections, and player stats.
 
 ### Settings
-Configure everything from the GUI — name, language, card style, fonts, Twitter keys, merge options, and more.
+Configure everything from the GUI:
+- Name / footer / language
+- Card style and fonts
+- Player Stats API key (fortnite-api.com — stored securely, shown as `•••`)
+- Twitter/X API credentials
+- Merge options and bot delay
+- **Cache management** — shows file count and size for Weapon Images, Icons folder, Merged folder, and Cache folder total. Clear weapon cache or all cache (with confirmation dialog).
 
 ### Console
-Live log output from all background operations.
+Live scrollable log output from all background operations.
 
 ---
 
@@ -121,64 +157,48 @@ Live log output from all background operations.
 
 ### macOS — Standalone App (Recommended)
 
-1. Download **`FNLeak-v1.0.0-macOS.zip`** from the [Releases](../../releases) page
-2. Unzip and drag **`FNLeak.app`** anywhere — Desktop, Applications folder, Downloads — it doesn't matter
+1. Download **`FNLeak-v1.2.0-macOS.zip`** from the [Releases](../../releases) page
+2. Unzip and drag **`FNLeak.app`** anywhere — Desktop, Applications, Downloads — it doesn't matter
 3. **First launch only:** macOS will block the app because it isn't from the App Store. To open it:
    - Right-click `FNLeak.app` → click **Open** → click **Open** in the dialog
    - You only need to do this once
-4. The app sets itself up automatically on first launch — no extra folders or files needed
+4. The app sets itself up automatically on first launch
 
 > **Where does FNLeak store its data?**
-> All generated images, cache, and your settings live in `~/Library/Application Support/FNLeak/`.
-> The app creates this automatically. You never need to touch it.
+> Generated images, cache, and settings live alongside the app folder.
+> Everything is created automatically — you never need to touch it manually.
 
-## Running FNLeak from Source (macOS)
+### Running from Source (macOS)
 
-### First-time setup (do this once)
-
-1. Open **Terminal**
-2. Run this command to make the launcher executable:
+**First-time setup (do this once):**
 
 ```bash
 chmod +x /path/to/FNLeak/run.command
 ```
 
-> Replace `/path/to/FNLeak/` with the actual folder location, e.g.  
-> `chmod +x ~/Desktop/FNLeak/run.command`
-
----
-
-### Launching FNLeak (macOS)
-
-After the one-time setup, **double-click `run.command`** in Finder to launch FNLeak.
+After that, **double-click `run.command`** in Finder to launch FNLeak.
 
 > Requires **Python 3.10+** — download from [python.org](https://www.python.org/downloads/) if needed.
 
-> **Note:** Do not move `run.command` out of the FNLeak folder — it will stop working.
-> 
-> For a Desktop shortcut: right-click `run.command` → **Make Alias** → drag the alias to your Desktop.
+### Running from Source (Windows)
 
-## Running FNLeak from Source (Windows)
+**Double-click `run.bat`** in File Explorer.
 
-### Launching FNLeak (Windows)
-
-**Double-click `run.bat`** in File Explorer to launch FNLeak.
-
-> Requires **Python 3.10+** — download from [python.org](https://www.python.org/downloads/)  
-> During installation, make sure to check **"Add Python to PATH"**.
+> Requires **Python 3.10+** — during installation, check **"Add Python to PATH"**.
 
 ---
 
 ## Configuration
 
-Use the **Settings** page in the GUI, or edit `settings.json` directly.
+Use the **Settings** page in the GUI, or edit `json/settings.json` directly.
 
 ```json
 {
   "name":        "YourLeakName",
   "language":    "en",
   "iconType":    "new",
-  "watermark":   "YourName",
+  "watermark":   "",
+  "apikey":      "",
 
   "twitAPIKey":              "",
   "twitAPISecretKey":        "",
@@ -201,6 +221,7 @@ Use the **Settings** page in the GUI, or edit `settings.json` directly.
 | `sideFont` | `"OpenSans-Regular.ttf"` | Secondary font (place in `fonts/`) |
 | `watermark` | `""` | Text drawn on every card |
 | `useFeaturedIfAvailable` | `false` | Prefer featured image over icon |
+| `apikey` | `""` | fortnite-api.com key for Player Stats (free at dash.fortnite-api.com) |
 | `MergeImages` | `true` | Auto-merge all cards into a grid after generation |
 | `AutoTweetMerged` | `false` | Auto-tweet the merged image |
 | `BotDelay` | `30` | Seconds between monitor poll checks |
@@ -214,7 +235,20 @@ Use the **Settings** page in the GUI, or edit `settings.json` directly.
 1. Go to [developer.twitter.com](https://developer.twitter.com) and create a project + app
 2. Under **Keys and Tokens**, generate your API Key, Secret, Access Token, and Access Token Secret
 3. Paste them into the **Settings** page in FNLeak (or directly into `settings.json`)
-4. **Note:** Media uploads require **Elevated access** — apply for it in the developer portal. Elevated access is free but requires manual approval from Twitter/X and can take several days.
+4. **Note:** Media uploads require **Elevated access** — apply for it in the developer portal. Elevated access is free but requires manual approval and can take several days.
+
+---
+
+## Player Stats Setup
+
+Player Stats uses the `fortnite-api.com` stats endpoint which requires a free API key.
+
+1. Go to [dash.fortnite-api.com](https://dash.fortnite-api.com)
+2. Sign up / log in
+3. Copy your API key
+4. Paste it into **Settings → Player Stats** in FNLeak
+
+FNLeak will prompt you with a step-by-step popup the first time you visit the Player Stats page without a key configured.
 
 ---
 
@@ -222,8 +256,7 @@ Use the **Settings** page in the GUI, or edit `settings.json` directly.
 
 | API | Used For |
 |---|---|
-| [fortnite-api.com](https://fortnite-api.com) | Cosmetics, new items, AES keys, news, shop, playlists, map |
-| [api.fnapi.dev](https://api.fnapi.dev) | Player stats lookup (no API key required) |
+| [fortnite-api.com](https://fortnite-api.com) | Cosmetics, new items, AES keys, news, shop, playlists, map, jam tracks, weapons, player stats |
 | [fortnite.gg](https://fortnite.gg) | Historical season map images |
 | [Twitter/X API v2](https://developer.twitter.com) | Tweet posting and media upload (optional) |
 
@@ -235,28 +268,36 @@ Use the **Settings** page in the GUI, or edit `settings.json` directly.
 FNLeak/
 ├── gui.py                 # Main GUI entry point (CustomTkinter)
 ├── bot.py                 # Terminal CLI entry point
-├── settings.json          # User configuration (auto-created on first launch)
-├── shop_history.json      # Item Shop section history (auto-managed)
 ├── requirements.txt       # Python dependencies
 ├── run.command            # macOS launch script (double-click to run)
 ├── run.bat                # Windows launch script (double-click to run)
 │
 ├── ALmodules/
-│   ├── image_gen.py       # Cosmetic card generation (all 5 styles)
-│   ├── shop.py            # Item Shop + Jam Tracks generation
-│   ├── stats_gen.py       # Player stats card generation
+│   ├── image_gen.py       # Cosmetic card generation (all 5 styles) + placeholder detection
+│   ├── shop.py            # Item Shop + Jam Tracks + shop history
+│   ├── stats_gen.py       # Player stats card generation (fortnite-api.com)
 │   ├── merger.py          # Grid image merger
 │   ├── compressor.py      # Image compression for Twitter size limits
 │   ├── twitter_client.py  # Tweepy v4 wrapper
 │   ├── monitors.py        # Background watchers (update/news/staging/shop)
 │   └── setup.py           # First-run setup (directories + rarity assets)
 │
+├── assets/
+│   ├── overlay.png              # Dark gradient overlay for shop cards
+│   ├── vbuck.png                # V-Bucks icon
+│   └── fnleakplaceholder.png    # Custom placeholder for missing cosmetic images
+│
 ├── fonts/                 # Place your .otf / .ttf fonts here
 ├── rarities/              # Auto-generated rarity background PNGs
 ├── icons/                 # Output: individual cosmetic card images
-├── merged/                # Output: merged grid + shop section images
-├── cache/                 # Cache: downloaded images
-└── assets/                # Static assets (overlay.png, vbuck.png)
+├── merged/
+│   └── YYYY-MM-DD/        # Output: shop section images, one folder per date
+│       ├── shop_*.jpg
+│       └── shop_meta.json
+├── cache/                 # Cache: downloaded weapon images (wpn_*.png)
+└── json/
+    ├── settings.json      # User configuration (auto-created on first launch)
+    └── shop_history.json  # Item Shop section history (auto-managed)
 ```
 
 ---
