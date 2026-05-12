@@ -81,6 +81,9 @@ def merge_icons(
     -------
     str : The resolved out_path
     """
+    if not os.path.isdir(icons_dir):
+        raise ValueError(f"Directory not found: {icons_dir}")
+
     icon_files = sorted([
         os.path.join(icons_dir, f)
         for f in os.listdir(icons_dir)
@@ -153,5 +156,95 @@ def merge_icons(
             os.remove(wm_path)
         except OSError:
             pass
+
+    return out_path
+
+
+def merge_files(
+    file_list: list[str],
+    out_path: str,
+    cols: int = DEFAULT_COLS,
+    bg_color: tuple[int, int, int] = (30, 30, 30),
+    card_scale: float = 1.0,
+    watermark_path: str = "",
+) -> str:
+    """
+    Merge an explicit list of image files into a grid image saved at out_path.
+
+    Unlike merge_icons(), this takes a specific file list rather than scanning
+    an entire directory — use this when the caller has already selected which
+    images to include.
+
+    Parameters
+    ----------
+    file_list      : Ordered list of image file paths to merge
+    out_path       : Output file path (.jpg or .png)
+    cols           : Columns per row for square/portrait cards (ignored for landscape)
+    bg_color       : RGB background fill colour
+    watermark_path : Optional local path to an image appended as the last cell
+    card_scale : Size multiplier applied to the auto-detected card dimensions
+                 (0.25 = quarter size, 1.0 = original, 2.0 = double)
+
+    Returns
+    -------
+    str : The resolved out_path
+    """
+    if not file_list:
+        raise ValueError("No files provided.")
+
+    # ── Detect card dimensions from the first valid image ─────────────────────
+    card_w, card_h = 512, 512
+    for path in file_list:
+        try:
+            with Image.open(path) as probe:
+                card_w, card_h = probe.size
+            break
+        except Exception:
+            continue
+
+    # Apply scale
+    card_w = max(1, int(card_w * card_scale))
+    card_h = max(1, int(card_h * card_scale))
+
+    # ── Append watermark as last cell ─────────────────────────────────────────
+    files = list(file_list)
+    if watermark_path and os.path.isfile(watermark_path):
+        files.append(watermark_path)
+
+    total = len(files)
+
+    # ── Grid layout ───────────────────────────────────────────────────────────
+    if card_w > card_h:
+        # Landscape cards: sqrt-based grid
+        n_cols = math.ceil(math.sqrt(total))
+        n_rows = math.ceil(total / n_cols)
+    else:
+        # Square / portrait cards: fixed column count
+        n_cols = cols
+        n_rows = math.ceil(total / n_cols)
+
+    canvas = Image.new("RGB", (n_cols * card_w, n_rows * card_h), bg_color)
+
+    # ── Place each card ───────────────────────────────────────────────────────
+    for idx, path in enumerate(files):
+        try:
+            icon = Image.open(path).convert("RGB")
+            if icon.size != (card_w, card_h):
+                icon = icon.resize((card_w, card_h), RESAMPLE)
+        except Exception:
+            icon = Image.new("RGB", (card_w, card_h), (80, 80, 80))
+
+        row_idx = idx // n_cols
+        col_idx = idx % n_cols
+        canvas.paste(icon, (col_idx * card_w, row_idx * card_h))
+
+    # ── Save ──────────────────────────────────────────────────────────────────
+    os.makedirs(
+        os.path.dirname(out_path) if os.path.dirname(out_path) else ".",
+        exist_ok=True,
+    )
+    fmt = "JPEG" if out_path.lower().endswith((".jpg", ".jpeg")) else "PNG"
+    save_kwargs = {"quality": 92, "optimize": True} if fmt == "JPEG" else {}
+    canvas.save(out_path, fmt, **save_kwargs)
 
     return out_path

@@ -25,7 +25,7 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 
 FORTNITE_API  = "https://fortnite-api.com"   # map / other endpoints
-_STATS_API    = "https://api.fnapi.dev"        # player stats (no key required)
+_STATS_API    = "https://fortnite-api.com"      # player stats (API key required)
 
 # ── Canvas constants ──────────────────────────────────────────────────────────
 W, H = 1500, 680
@@ -263,40 +263,85 @@ def generate_stats_image(data: dict, font_path: Optional[str], out_path: str) ->
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+def _normalize(data: dict) -> dict:
+    """Map fortnite-api.com stats response → shape generate_stats_image expects."""
+    account = data.get("account") or {}
+    bp      = data.get("battlePass") or {}
+    stats   = (data.get("stats") or {}).get("all") or {}
+
+    def _mode(src: dict) -> dict:
+        return {
+            "wins":          src.get("wins", 0),
+            "kills":         src.get("kills", 0),
+            "kd":            src.get("kd", 0.0),
+            "winRate":       src.get("winRate", 0.0),
+            "matches":       src.get("matches", 0),
+            "minutesPlayed": src.get("minutesPlayed", 0),
+            "deaths":        src.get("deaths", 0),
+        }
+
+    return {
+        "account":    {"name": account.get("name", ""), "id": account.get("id", "")},
+        "battlePass": {"level": bp.get("level", 0), "progress": bp.get("progress", 0)},
+        "stats": {
+            "all": {
+                "overall": _mode(stats.get("overall") or {}),
+                "solo":    _mode(stats.get("solo")    or {}),
+                "duo":     _mode(stats.get("duo")     or {}),
+                "squad":   _mode(stats.get("squad")   or {}),
+                "ltm":     _mode(stats.get("ltm")     or {}),
+            }
+        },
+        "meta": data.get("meta", {}),
+    }
+
+
 def fetch_stats(username: str, account_type: str = "epic",
                 api_key: Optional[str] = None) -> dict:
     """
-    Fetch lifetime BR stats via api.fnapi.dev — no API key required.
+    Fetch lifetime BR stats via fortnite-api.com — API key required.
     Raises ValueError with a readable message on failure.
     """
-    params: dict = {"q": username}
-    if account_type and account_type != "epic":
-        params["platform"] = account_type
+    if not api_key:
+        raise ValueError(
+            "No API key configured.\n"
+            "Get a free key at dash.fortnite-api.com and add it in Settings."
+        )
 
     r = requests.get(
-        f"{_STATS_API}/v1/players/lookup",
-        params=params,
+        f"{_STATS_API}/v2/stats/br/v2",
+        params={"name": username, "accountType": account_type, "timeWindow": "lifetime"},
+        headers={"Authorization": api_key},
         timeout=15,
     )
 
+    if r.status_code == 403:
+        try:
+            body     = r.json()
+            err_msg  = (body.get("error") or "").lower()
+            raw_msg  = body.get("error") or body.get("message") or ""
+        except Exception:
+            err_msg = ""
+            raw_msg = ""
+        if "private" in err_msg or "disabled" in err_msg:
+            raise ValueError(
+                f"'{username}' has their stats set to private.\n"
+                "They need to enable public stats in Epic account settings."
+            )
+        detail = f"\n(API said: {raw_msg})" if raw_msg else ""
+        raise ValueError(f"Invalid or missing API key. Check your key in Settings → Player Stats.{detail}")
     if r.status_code == 404:
-        body = r.json() if r.content else {}
-        msg  = body.get("message", f"Player '{username}' not found.")
-        raise ValueError(msg)
+        raise ValueError(f"Player '{username}' not found.")
 
     r.raise_for_status()
-    body = r.json()
-    data = body.get("data") or body
+    data = r.json().get("data") or {}
 
-    # Check if stats are private
-    if (data.get("meta") or {}).get("statsPrivate"):
-        raise ValueError(
-            f"'{username}' has their stats set to private.\n"
-            "They need to enable public stats in Epic account settings."
-        )
     if not data.get("stats"):
-        raise ValueError("No stats found for this player.")
-    return data
+        raise ValueError(
+            "No stats found — player may have private stats or has never played BR."
+        )
+
+    return _normalize(data)
 
 
 def fetch_and_generate(
@@ -304,10 +349,10 @@ def fetch_and_generate(
     account_type: str = "epic",
     font_path: Optional[str] = None,
     out_dir: str = "icons",
-    api_key: Optional[str] = None,   # kept for call-site compat, no longer used
+    api_key: Optional[str] = None,
 ) -> tuple[dict, str]:
     """Fetch stats + generate image. Returns (data, image_path)."""
-    data     = fetch_stats(username, account_type)
+    data     = fetch_stats(username, account_type, api_key=api_key)
     safe     = "".join(c if c.isalnum() else "_" for c in username)
     out_path = os.path.join(out_dir, f"stats_{safe}.jpg")
     generate_stats_image(data, font_path, out_path)

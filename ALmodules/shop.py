@@ -597,17 +597,7 @@ def generate_shop(cfg: dict, tw, progress_cb=None) -> None:
             pass
         os.makedirs(d, exist_ok=True)
     os.makedirs("merged", exist_ok=True)
-    # Remove old section images so re-runs don't show stale duplicates
-    import glob as _glob
-    for old_f in _glob.glob("merged/shop_*.jpg"):
-        try:
-            os.remove(old_f)
-        except Exception:
-            pass
-    try:
-        os.remove("merged/shop.jpg")
-    except FileNotFoundError:
-        pass
+    # Date subfolder is created after we know today_str (below)
 
     # ── Fetch shop ────────────────────────────────────────────────────────────
     print(Fore.CYAN + "\nFetching Item Shop…")
@@ -616,9 +606,24 @@ def generate_shop(cfg: dict, tw, progress_cb=None) -> None:
         print(Fore.RED + "Failed to fetch shop.")
         return
 
-    today_str = (data.get("data") or {}).get("date", "")[:10] or \
-                datetime.utcnow().strftime("%Y-%m-%d")
-    entries   = (data.get("data") or {}).get("entries", [])
+    today_str  = (data.get("data") or {}).get("date", "")[:10] or \
+                 datetime.utcnow().strftime("%Y-%m-%d")
+    merged_dir = os.path.join("merged", today_str)
+    os.makedirs(merged_dir, exist_ok=True)
+
+    # Remove stale section images from today's folder on re-runs
+    import glob as _glob
+    for old_f in _glob.glob(os.path.join(merged_dir, "shop_*.jpg")):
+        try:
+            os.remove(old_f)
+        except Exception:
+            pass
+    try:
+        os.remove(os.path.join(merged_dir, "shop.jpg"))
+    except FileNotFoundError:
+        pass
+
+    entries = (data.get("data") or {}).get("entries", [])
 
     if not entries:
         print(Fore.RED + "No shop entries found.")
@@ -766,7 +771,7 @@ def generate_shop(cfg: dict, tw, progress_cb=None) -> None:
 
         safe_name = "".join(c if c.isalnum() or c in " _-" else "_" for c in sec_name).strip()
         out_fname = f"shop_{safe_name}_{today_str}.jpg"
-        out_path  = f"merged/{out_fname}"
+        out_path  = os.path.join(merged_dir, out_fname)
         img = _assemble_section(sec_name, cards, today_str, font_path, is_new, leaving_str)
         img.save(out_path, "JPEG", quality=92, optimize=True)
         print(Fore.GREEN + f"  → {out_path}")
@@ -782,11 +787,11 @@ def generate_shop(cfg: dict, tw, progress_cb=None) -> None:
 
         if first_output is None:
             first_output = out_path
-            img.save("merged/shop.jpg", "JPEG", quality=92, optimize=True)
+            img.save(os.path.join(merged_dir, "shop.jpg"), "JPEG", quality=92, optimize=True)
 
     # ── Save section metadata for GUI display ─────────────────────────────────
     try:
-        with open("merged/shop_meta.json", "w") as _f:
+        with open(os.path.join(merged_dir, "shop_meta.json"), "w") as _f:
             json.dump(shop_meta, _f)
     except Exception:
         pass

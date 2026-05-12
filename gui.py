@@ -87,7 +87,8 @@ C = {
     "input_bg":    "#111111",
 }
 
-FORTNITE_API = "https://fortnite-api.com"
+FORTNITE_API       = "https://fortnite-api.com"
+FORTNITE_ECOSYSTEM = "https://api.fortnite.com/ecosystem/v1"
 JSON_DIR      = "json"
 SETTINGS_PATH = os.path.join(JSON_DIR, "settings.json")
 
@@ -117,7 +118,7 @@ class _ConsoleRedirector:
 DEFAULTS = {
     "name": "FNLeak", "footer": "#Fortnite", "language": "en",
     "imageFont": "BurbankBigCondensed-Black.otf", "sideFont": "OpenSans-Regular.ttf",
-    "placeholderUrl": "https://i.imgur.com/W22Foja.png", "watermark": "",
+    "placeholderUrl": "https://raw.githubusercontent.com/FortniteFevers/FNLeak/refs/heads/main/assets/fnleakplaceholder.png", "watermark": "",
     "useFeaturedIfAvailable": False, "iconType": "new",
     "twitAPIKey": "", "twitAPISecretKey": "", "twitAccessToken": "", "twitAccessTokenSecret": "",
     "tweetUpdate": False, "tweetAes": False, "TweetSearch": False, "AutoTweetMerged": False,
@@ -152,11 +153,17 @@ def save_settings(cfg: dict):
         json.dump(cfg, f, indent=2)
 
 
-def get_image_url(item: dict, use_featured: bool) -> str:
+def get_image_url(item: dict, use_featured: bool, placeholder: str = "") -> str:
     imgs = item.get("images") or {}
+    fallback = placeholder or DEFAULTS["placeholderUrl"]
     if use_featured and imgs.get("featured"):
-        return imgs["featured"]
-    return imgs.get("icon") or "https://i.ibb.co/KyvMydQ/do-Not-Delete.png"
+        url = imgs["featured"]
+    else:
+        url = imgs.get("icon") or fallback
+    # Replace fortnite-api.com's own placeholder images with the custom one
+    if url and "placeholder" in url.lower() and "fortnite-api.com" in url:
+        return fallback
+    return url or fallback
 
 
 def delete_icons():
@@ -230,14 +237,14 @@ class DashboardPage(_Page):
         self._stats_frame = ctk.CTkFrame(self._body, fg_color="transparent")
         self._stats_frame.pack(fill="x", padx=40, pady=(0, 8))
 
-        self._build_label   = self._stat_card("Current Build",  "—",          C["blue"])
-        self._items_label   = self._stat_card("New Items",      "—",          C["accent"])
-        self._aes_label     = self._stat_card("AES / Patch",    "Loading…",   C["orange"])
+        self._build_label   = self._stat_card("Current Build",  "—",          "#60a5fa")  # bright blue
+        self._items_label   = self._stat_card("New Items",      "—",          "#4ade80")  # bright green
+        self._aes_label     = self._stat_card("AES / Patch",    "Loading…",   "#fb923c")  # bright orange
         self._twitter_label = self._stat_card("Twitter / X",    "Checking…",  C["text_dim"])
 
         # API status card — one row per API used by FNLeak
         api_card = ctk.CTkFrame(self._body, fg_color=C["card"], corner_radius=8)
-        api_card.pack(fill="x", padx=40, pady=(4, 0))
+        api_card.pack(fill="x", padx=40, pady=(4, 16))
         ctk.CTkLabel(api_card, text="API STATUS",
                      font=ctk.CTkFont(size=10), text_color=C["text_dim"]).pack(
             anchor="w", padx=12, pady=(8, 2))
@@ -265,8 +272,8 @@ class DashboardPage(_Page):
             api_card, "fortnite-api.com",
             "Cosmetics, items, AES, news, shop, map")
         self._fnapi_dot, self._fnapi_status_lbl = _api_row(
-            api_card, "api.fnapi.dev",
-            "Player stats")
+            api_card, "fortnite-api.com/stats",
+            "Player stats (API key required)")
         self._fgg_dot,   self._fgg_status_lbl   = _api_row(
             api_card, "fortnite.gg",
             "Historical maps")
@@ -277,43 +284,12 @@ class DashboardPage(_Page):
         # Keep ping label for fortnite-api.com (appended to its status text)
         self._api_ping_lbl = None   # unused — ping folded into status label
 
-        # Quick-action buttons (2 rows of 4)
-        btn_outer = ctk.CTkFrame(self._body, fg_color="transparent")
-        btn_outer.pack(pady=(8, 12))
-
-        _actions = [
-            ("Generate",     "generate"),
-            ("Search",       "search"),
-            ("Item Shop",    "shop"),
-            ("Jam Tracks",   "jamtracks"),
-            ("Player Stats", "stats"),
-            ("Map Viewer",   "map"),
-            ("Game Modes",   "playlists"),
-            ("Creator Code", "creator"),
-        ]
-
-        row1 = ctk.CTkFrame(btn_outer, fg_color="transparent")
-        row1.pack()
-        row2 = ctk.CTkFrame(btn_outer, fg_color="transparent")
-        row2.pack(pady=(6, 0))
-
-        for i, (text, page) in enumerate(_actions):
-            parent = row1 if i < 4 else row2
-            ctk.CTkButton(
-                parent, text=text, width=148, height=38,
-                fg_color=C["card"], hover_color=C["border"],
-                text_color=C["text"],
-                font=ctk.CTkFont(size=12, weight="bold"),
-                border_width=1, border_color=C["border"],
-                command=lambda p=page: app.show_page(p),
-            ).pack(side="left", padx=4)
-
         # AES section
         self._aes_dynamic_keys: list = []
         self._aes_expanded = False
 
         aes_outer = ctk.CTkFrame(self._body, fg_color=C["card"], corner_radius=8)
-        aes_outer.pack(fill="x", padx=40, pady=(0, 4))
+        aes_outer.pack(fill="x", padx=40, pady=(0, 16))
 
         # Main key row
         aes_strip = ctk.CTkFrame(aes_outer, fg_color="transparent")
@@ -347,7 +323,7 @@ class DashboardPage(_Page):
         # News feed
         ctk.CTkLabel(self._body, text="📰  Fortnite News",
                      font=ctk.CTkFont(size=13, weight="bold"),
-                     text_color=C["text_dim"]).pack(anchor="w", padx=40, pady=(0, 6))
+                     text_color=C["text_dim"]).pack(anchor="w", padx=40, pady=(0, 8))
 
         self._news_frame = ctk.CTkScrollableFrame(
             self._body, fg_color=C["card"], corner_radius=8, height=160,
@@ -363,11 +339,11 @@ class DashboardPage(_Page):
         card = ctk.CTkFrame(self._stats_frame, fg_color=C["card"],
                             corner_radius=10, border_width=1, border_color=C["border"])
         card.pack(side="left", expand=True, fill="both", padx=6)
-        ctk.CTkLabel(card, text=title, font=ctk.CTkFont(size=11),
-                     text_color=C["text_dim"]).pack(pady=(14, 2))
-        val_lbl = ctk.CTkLabel(card, text=value, font=ctk.CTkFont(size=20, weight="bold"),
+        ctk.CTkLabel(card, text=title, font=ctk.CTkFont(size=12),
+                     text_color=C["text_dim"]).pack(pady=(18, 4))
+        val_lbl = ctk.CTkLabel(card, text=value, font=ctk.CTkFont(size=28, weight="bold"),
                                text_color=color)
-        val_lbl.pack(pady=(0, 14))
+        val_lbl.pack(pady=(0, 18))
         return val_lbl
 
     def on_show(self):
@@ -426,13 +402,14 @@ class DashboardPage(_Page):
                 self._api_status_lbl.configure(text="Offline", text_color=C["red"]),
             ))
 
-        # ── api.fnapi.dev ─────────────────────────────────────────────────────
+        # ── fortnite-api.com/stats ────────────────────────────────────────────
         try:
             t0 = time.time()
-            r  = requests.get("https://api.fnapi.dev/stats/v2/account-type/epic/player-name/Ninja",
+            r  = requests.get("https://fortnite-api.com/v2/stats/br/v2",
+                              params={"name": "Ninja", "accountType": "epic"},
                               timeout=8)
             ping_ms = int((time.time() - t0) * 1000)
-            # Any response (even 404/error) means the server is reachable
+            # 403 = endpoint reachable (just needs auth key) — still "online"
             self.after(0, lambda p=ping_ms: (
                 self._fnapi_dot.configure(text_color=C["green"]),
                 self._fnapi_status_lbl.configure(
@@ -514,8 +491,9 @@ class DashboardPage(_Page):
             pil = pil.resize((210, 90), PILImage.LANCZOS)
             ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil, size=(210, 90))
             self._news_img_refs.append(ctkimg)
-            lbl = ctk.CTkLabel(card, text="", image=ctkimg)
-            self.after(0, lambda l=lbl: l.pack(padx=5, pady=(8, 2)))
+            # Widget creation must happen on the main thread — schedule it via after()
+            self.after(0, lambda img=ctkimg, c=card:
+                       ctk.CTkLabel(c, text="", image=img).pack(padx=5, pady=(8, 2)))
         except Exception:
             pass
 
@@ -824,12 +802,14 @@ class GeneratePage(_Page):
             item_id = item.get("id", f"item_{idx}")
             out_path = f"icons/{item_id}.png"
             try:
-                url = get_image_url(item, use_feat)
+                ph  = cfg.get("placeholderUrl", DEFAULTS["placeholderUrl"])
+                url = get_image_url(item, use_feat, placeholder=ph)
                 generate_card(
                     item=item, icon_url=url, out_path=out_path,
                     icon_type=icon_type, font_main=font_main, font_side=font_side,
                     watermark=watermark, show_source=cfg["showitemsource"], build=build,
                     watermark_pos=cfg.get("watermarkPosition", "Top Left").lower().replace(" ", "-"),
+                    placeholder_url=ph,
                 )
                 ok += 1
                 pct = idx / len(items)
@@ -1149,7 +1129,8 @@ class SearchPage(_Page):
         cfg      = self.app.cfg
         item_id  = item["id"]
         out_path = f"icons/{item_id}.png"
-        url      = get_image_url(item, cfg["useFeaturedIfAvailable"])
+        ph       = cfg.get("placeholderUrl", DEFAULTS["placeholderUrl"])
+        url      = get_image_url(item, cfg["useFeaturedIfAvailable"], placeholder=ph)
 
         # Add to persistent history
         self._add_to_history(item)
@@ -1163,12 +1144,14 @@ class SearchPage(_Page):
 
     def _gen_card(self, item, url, out_path, cfg):
         try:
+            ph = cfg.get("placeholderUrl", DEFAULTS["placeholderUrl"])
             generate_card(
                 item=item, icon_url=url, out_path=out_path,
                 icon_type=cfg["iconType"], font_main=resolve_font(cfg["imageFont"]),
                 font_side=resolve_font(cfg["sideFont"]),
                 watermark=cfg["watermark"], show_source=cfg["showitemsource"],
                 watermark_pos=cfg.get("watermarkPosition", "Top Left").lower().replace(" ", "-"),
+                placeholder_url=ph,
             )
             self._last_item = item
             self._last_path = out_path
@@ -1513,10 +1496,11 @@ class MonitorsPage(_Page):
 class ShopPage(_Page):
     def __init__(self, master, app):
         super().__init__(master, app)
-        self._running      = False
-        self._img_refs     = []
+        self._running           = False
+        self._img_refs          = []
         self._content_frame: Optional[ctk.CTkFrame] = None
-        self._gen_start:   float = 0.0
+        self._gen_start:    float = 0.0
+        self._current_shop_dir: str = ""
 
         ctk.CTkLabel(self, text="Item Shop",
                      font=ctk.CTkFont(size=22, weight="bold"),
@@ -1539,9 +1523,15 @@ class ShopPage(_Page):
             btn_row, text="Open Folder", width=130, height=44,
             fg_color=C["card"], hover_color=C["border"],
             state="disabled",
-            command=lambda: open_file("merged")
+            command=lambda: open_file(self._current_shop_dir or "merged")
         )
         self._open_btn.pack(side="left", padx=6)
+
+        ctk.CTkButton(
+            btn_row, text="Load Past Shop", width=150, height=44,
+            fg_color=C["card"], hover_color=C["border"],
+            command=self._load_past_shop,
+        ).pack(side="left", padx=6)
 
         self._prog = ctk.CTkProgressBar(self, height=8, progress_color=C["border"])
         self._prog.set(0)
@@ -1614,7 +1604,6 @@ class ShopPage(_Page):
                                                        text="Generate Shop Image"))
         self.after(0, lambda: self._prog.set(1.0))
         self.after(0, lambda: self._eta_lbl.configure(text=""))
-        self.after(0, lambda: self._open_btn.configure(state="normal"))
         self._running = False
 
     def _copy_section(self, path: str):
@@ -1680,20 +1669,94 @@ class ShopPage(_Page):
                       command=win.destroy).pack(pady=(0, 20))
         win.bind("<Escape>", lambda _: win.destroy())
 
-    def _show_all_sections(self):
+    def _load_past_shop(self):
+        """Show a CTk popup listing all available dated shop folders to load."""
+        import glob as _glob
+        dated = sorted(
+            [d for d in _glob.glob(os.path.join("merged", "????-??-??"))
+             if os.path.exists(os.path.join(d, "shop_meta.json"))],
+            reverse=True,
+        )
+        if not dated:
+            self._status_lbl.configure(
+                text="No past shops found. Generate a shop first.",
+                text_color=C["red"])
+            return
+
+        win = ctk.CTkToplevel(self)
+        win.title("Load Past Shop")
+        win.geometry("340x180")
+        win.resizable(False, False)
+        win.attributes("-topmost", True)
+        win.configure(fg_color=C["bg"])
+
+        ctk.CTkLabel(win, text="Select a date to load",
+                     font=ctk.CTkFont(size=15, weight="bold"),
+                     text_color=C["text"]).pack(pady=(20, 12))
+
+        dates   = [os.path.basename(d) for d in dated]
+        sel_var = ctk.StringVar(value=dates[0])
+        ctk.CTkOptionMenu(win, values=dates, variable=sel_var,
+                          width=200, fg_color=C["card"],
+                          button_color=C["border"],
+                          dropdown_fg_color=C["card"]).pack(pady=(0, 16))
+
+        def _confirm():
+            chosen = os.path.join("merged", sel_var.get())
+            win.destroy()
+            self._show_all_sections(shop_dir=chosen)
+
+        ctk.CTkButton(win, text="Load", width=120, height=34,
+                      fg_color=C["accent_btn"], hover_color=C["accent"],
+                      font=ctk.CTkFont(weight="bold"),
+                      command=_confirm).pack()
+        win.bind("<Return>", lambda _: _confirm())
+
+    def _show_all_sections(self, shop_dir: str = ""):
         import glob as _glob, json as _json
-        cf    = self._replace_content()
-        files = sorted(_glob.glob("merged/shop_*.jpg"))
+        cf = self._replace_content()
+
+        # Resolve shop_dir: use provided, otherwise most recent dated subfolder
+        if not shop_dir:
+            dated_dirs = sorted(_glob.glob(os.path.join("merged", "????-??-??")), reverse=True)
+            shop_dir   = dated_dirs[0] if dated_dirs else "merged"
+
+        # Track active folder so Open Folder button opens the right place
+        self._current_shop_dir = shop_dir
+        self._open_btn.configure(state="normal")
+
+        files = sorted(_glob.glob(os.path.join(shop_dir, "shop_*.jpg")))
         if not files:
-            files = ["merged/shop.jpg"] if os.path.exists("merged/shop.jpg") else []
+            fallback = os.path.join(shop_dir, "shop.jpg")
+            files = [fallback] if os.path.exists(fallback) else []
         if not files:
             self._status_lbl.configure(text="No shop images found.")
             return
 
+        # ── Date header at top of scroll ──────────────────────────────────────
+        date_slug = os.path.basename(shop_dir)          # e.g. "2024-05-12"
+        try:
+            dt_obj       = datetime.strptime(date_slug, "%Y-%m-%d")
+            display_date = dt_obj.strftime("%B %d, %Y")  # e.g. "May 12, 2024"
+        except Exception:
+            display_date = date_slug
+
+        date_hdr = ctk.CTkFrame(cf, fg_color="transparent")
+        date_hdr.pack(fill="x", padx=8, pady=(10, 6))
+        ctk.CTkLabel(
+            date_hdr,
+            text=f"📅  {display_date}",
+            font=ctk.CTkFont(size=17, weight="bold"),
+            text_color=C["text"],
+        ).pack(side="left")
+
+        # Show which date is loaded in the status bar too
+        self._status_lbl.configure(text=f"Showing shop: {date_slug}", text_color=C["text_dim"])
+
         # Load section metadata (is_new, leaving) saved by generate_shop
         meta: dict = {}
         try:
-            with open(os.path.join("merged", "shop_meta.json")) as _mf:
+            with open(os.path.join(shop_dir, "shop_meta.json")) as _mf:
                 meta = _json.load(_mf)
         except Exception:
             pass
@@ -1856,10 +1919,19 @@ class JamTracksPage(_Page):
             tracks = fetch_jam_tracks(self.app.cfg.get("language", "en"))
             self._tracks = tracks
             self._loaded = True
-            self.after(0, lambda t=tracks: self._render(t))
+            self.after(0, lambda t=tracks: self._safe_render(t))
         except Exception as e:
             msg = str(e)
+            self.app.log(f"[JamTracks] fetch error: {e}", error=True)
             self.after(0, lambda m=msg: self._show_error(m))
+
+    def _safe_render(self, tracks: list):
+        """Wrapper around _render() that catches and displays any exceptions."""
+        try:
+            self._render(tracks)
+        except Exception as e:
+            self.app.log(f"[JamTracks] render error: {e}", error=True)
+            self._show_error(str(e))
 
     def _render(self, tracks: list):
         cf = self._replace_content()
@@ -2061,6 +2133,7 @@ class StatsPage(_Page):
         self._content_frame: Optional[ctk.CTkFrame] = None
         self._last_img_path: Optional[str] = None
         self._last_stats_name: str = ""
+        self._key_prompt_shown: bool = False
 
         # ── Header ──────────────────────────────────────────────────────────
         ctk.CTkLabel(self, text="Player Stats",
@@ -2069,8 +2142,21 @@ class StatsPage(_Page):
         ctk.CTkLabel(self, text="Look up lifetime Battle Royale stats for any player.",
                      font=ctk.CTkFont(size=12), text_color=C["text_dim"]).pack(pady=(0, 16))
 
+        # ── API key banner (hidden until on_show decides) ────────────────────
+        self._no_key_banner = ctk.CTkFrame(self, fg_color="#2a1f0e", corner_radius=8)
+        _brow = ctk.CTkFrame(self._no_key_banner, fg_color="transparent")
+        _brow.pack(fill="x", padx=16, pady=10)
+        ctk.CTkLabel(_brow, text="⚠  API key required to use Player Stats",
+                     font=ctk.CTkFont(size=13, weight="bold"),
+                     text_color="#fb923c").pack(side="left")
+        ctk.CTkButton(_brow, text="Go to Settings →", width=130, height=28,
+                      fg_color="transparent", hover_color=C["border"],
+                      text_color="#fb923c",
+                      command=lambda: self.app.show_page("settings")).pack(side="right")
+
         # ── Search bar ──────────────────────────────────────────────────────
-        search_row = ctk.CTkFrame(self, fg_color="transparent")
+        self._search_bar = ctk.CTkFrame(self, fg_color="transparent")
+        search_row = self._search_bar
         search_row.pack(padx=40, pady=(0, 8))
 
         self._username_entry = ctk.CTkEntry(
@@ -2118,6 +2204,58 @@ class StatsPage(_Page):
         ctk.CTkLabel(self._content_frame,
                      text="Enter a username above to look up stats.",
                      text_color=C["text_dim"]).pack(pady=60)
+
+    # ── lifecycle ─────────────────────────────────────────────────────────────
+
+    def on_show(self):
+        has_key = bool(self.app.cfg.get("apikey", "").strip())
+        if has_key:
+            self._no_key_banner.pack_forget()
+        else:
+            self._no_key_banner.pack(fill="x", padx=24, pady=(0, 8),
+                                     before=self._search_bar)
+            if not self._key_prompt_shown:
+                self._key_prompt_shown = True
+                self.after(200, self._show_key_popup)
+
+    def _show_key_popup(self):
+        import webbrowser
+        win = ctk.CTkToplevel(self)
+        win.title("API Key Required")
+        win.geometry("460x280")
+        win.resizable(False, False)
+        win.attributes("-topmost", True)
+        win.configure(fg_color=C["bg"])
+
+        ctk.CTkLabel(win, text="API Key Required",
+                     font=ctk.CTkFont(size=18, weight="bold"),
+                     text_color=C["text"]).pack(pady=(24, 6))
+        ctk.CTkLabel(win,
+                     text="Player Stats uses fortnite-api.com, which requires\n"
+                          "a free API key. Takes about 30 seconds to set up.",
+                     font=ctk.CTkFont(size=13), text_color=C["text_dim"],
+                     justify="center").pack(pady=(0, 12))
+        ctk.CTkLabel(win,
+                     text="1.  Go to dash.fortnite-api.com\n"
+                          "2.  Sign up / log in\n"
+                          "3.  Copy your API key\n"
+                          "4.  Paste it in Settings → Player Stats",
+                     font=ctk.CTkFont(size=12), text_color=C["text_dim"],
+                     justify="left").pack(padx=40, pady=(0, 20))
+
+        btn_row = ctk.CTkFrame(win, fg_color="transparent")
+        btn_row.pack()
+        ctk.CTkButton(btn_row, text="Open fortnite-api.com", width=180,
+                      fg_color=C["accent_btn"], hover_color=C["border"],
+                      command=lambda: webbrowser.open("https://dash.fortnite-api.com/")
+                      ).pack(side="left", padx=6)
+        ctk.CTkButton(btn_row, text="Go to Settings", width=130,
+                      fg_color=C["accent_btn"], hover_color=C["border"],
+                      command=lambda: (win.destroy(), self.app.show_page("settings"))
+                      ).pack(side="left", padx=6)
+        ctk.CTkButton(btn_row, text="Dismiss", width=80,
+                      fg_color="transparent", hover_color=C["border"],
+                      command=win.destroy).pack(side="left", padx=6)
 
     # ── helpers ──────────────────────────────────────────────────────────────
 
@@ -2281,14 +2419,19 @@ class CreatorCodePage(_Page):
     def __init__(self, master, app):
         super().__init__(master, app)
 
-        ctk.CTkLabel(self, text="Creator Code Lookup",
+        # Scrollable container — keeps Island Analytics visible below the SAC section
+        p = ctk.CTkScrollableFrame(self, fg_color="transparent", corner_radius=0,
+                                    scrollbar_button_color=C["border"])
+        p.pack(fill="both", expand=True)
+
+        # ── SAC lookup ────────────────────────────────────────────────────────
+        ctk.CTkLabel(p, text="Creator Code Lookup",
                      font=ctk.CTkFont(size=22, weight="bold"),
                      text_color=C["text"]).pack(pady=(32, 6))
-        ctk.CTkLabel(self, text="Check if a Support-a-Creator code is active and who owns it.",
+        ctk.CTkLabel(p, text="Check if a Support-a-Creator code is active and who owns it.",
                      font=ctk.CTkFont(size=13), text_color=C["text_dim"]).pack(pady=(0, 24))
 
-        # Search bar
-        bar = ctk.CTkFrame(self, fg_color="transparent")
+        bar = ctk.CTkFrame(p, fg_color="transparent")
         bar.pack(padx=120, fill="x")
         self._entry = ctk.CTkEntry(bar, placeholder_text="Enter creator code…",
                                    height=44, fg_color=C["input_bg"],
@@ -2301,12 +2444,11 @@ class CreatorCodePage(_Page):
                                           command=self._lookup)
         self._search_btn.pack(side="right")
 
-        # Result card
-        self._result = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=12)
+        self._result = ctk.CTkFrame(p, fg_color=C["card"], corner_radius=12)
         self._result.pack(fill="x", padx=120, pady=24)
 
-        self._status_icon  = ctk.CTkLabel(self._result, text="",
-                                           font=ctk.CTkFont(size=48))
+        self._status_icon = ctk.CTkLabel(self._result, text="",
+                                          font=ctk.CTkFont(size=48))
         self._status_icon.pack(pady=(28, 4))
 
         self._code_lbl = ctk.CTkLabel(self._result, text="",
@@ -2323,6 +2465,74 @@ class CreatorCodePage(_Page):
                                         font=ctk.CTkFont(size=12),
                                         text_color=C["text_dim"])
         self._badge_lbl.pack(pady=(4, 28))
+
+        # ── Island Analytics section ──────────────────────────────────────────
+        ctk.CTkFrame(p, fg_color=C["border"], height=1).pack(fill="x", padx=120, pady=(0, 24))
+
+        ctk.CTkLabel(p, text="Island Analytics",
+                     font=ctk.CTkFont(size=18, weight="bold"),
+                     text_color=C["text"]).pack(pady=(0, 4))
+        ctk.CTkLabel(p, text="Enter an island code to see player metrics from the last 7 days.",
+                     font=ctk.CTkFont(size=12), text_color=C["text_dim"]).pack(pady=(0, 16))
+
+        ibar = ctk.CTkFrame(p, fg_color="transparent")
+        ibar.pack(padx=120, fill="x")
+        self._isle_entry = ctk.CTkEntry(
+            ibar, placeholder_text="Island code  (e.g. 1234-5678-9012)…",
+            height=44, fg_color=C["input_bg"], font=ctk.CTkFont(size=14))
+        self._isle_entry.pack(side="left", expand=True, fill="x", padx=(0, 8))
+        self._isle_entry.bind("<Return>", lambda _: self._island_lookup())
+        self._isle_btn = ctk.CTkButton(
+            ibar, text="Look Up Stats", width=130, height=44,
+            fg_color=C["accent_btn"], hover_color=C["accent"],
+            font=ctk.CTkFont(size=13, weight="bold"),
+            command=self._island_lookup)
+        self._isle_btn.pack(side="right")
+
+        self._isle_card = ctk.CTkFrame(p, fg_color=C["card"], corner_radius=12)
+        self._isle_card.pack(fill="x", padx=120, pady=24)
+
+        self._isle_title = ctk.CTkLabel(
+            self._isle_card, text="",
+            font=ctk.CTkFont(size=20, weight="bold"), text_color=C["text"])
+        self._isle_title.pack(pady=(24, 2))
+
+        self._isle_creator = ctk.CTkLabel(
+            self._isle_card, text="",
+            font=ctk.CTkFont(size=13), text_color=C["text_dim"])
+        self._isle_creator.pack(pady=(0, 16))
+
+        self._isle_stats_row = ctk.CTkFrame(self._isle_card, fg_color="transparent")
+        self._isle_stats_row.pack(pady=(0, 12))
+
+        # Each tile gets a distinct accent color
+        _tile_colors = {
+            "peakCCU":      "#4fc3f7",   # sky blue
+            "plays":        "#81c784",   # green
+            "uniquePlayers":"#ffb74d",   # amber
+            "minutesPlayed":"#ce93d8",   # purple
+        }
+        self._isle_stat_labels: dict[str, ctk.CTkLabel] = {}
+        for key, label in [("peakCCU",       "Peak CCU"),
+                            ("plays",          "Total Plays"),
+                            ("uniquePlayers",  "Unique Players"),
+                            ("minutesPlayed",  "Mins Played")]:
+            tile = ctk.CTkFrame(self._isle_stats_row, fg_color=C["input_bg"],
+                                corner_radius=8, width=140, height=76)
+            tile.pack(side="left", padx=8)
+            tile.pack_propagate(False)
+            val_lbl = ctk.CTkLabel(tile, text="—",
+                                   font=ctk.CTkFont(size=24, weight="bold"),
+                                   text_color=_tile_colors[key])
+            val_lbl.pack(expand=True)
+            ctk.CTkLabel(tile, text=label, font=ctk.CTkFont(size=11),
+                         text_color=C["text_dim"]).pack(pady=(0, 8))
+            self._isle_stat_labels[key] = val_lbl
+
+        self._isle_retention = ctk.CTkLabel(
+            self._isle_card, text="",
+            font=ctk.CTkFont(size=12), text_color=C["text_dim"])
+        self._isle_retention.pack(pady=(0, 20))
 
     def _lookup(self):
         code = self._entry.get().strip().lower()
@@ -2378,6 +2588,104 @@ class CreatorCodePage(_Page):
         self._code_lbl.configure(text="API Error", text_color=C["orange"])
         self._name_lbl.configure(text=msg[:80])
         self._badge_lbl.configure(text="")
+
+    # ── island analytics ──────────────────────────────────────────────────────
+
+    def _island_lookup(self):
+        code = self._isle_entry.get().strip()
+        if not code:
+            return
+        self._isle_btn.configure(state="disabled", text="…")
+        self._isle_title.configure(text="Loading…", text_color=C["text_dim"])
+        self._isle_creator.configure(text="")
+        self._isle_retention.configure(text="")
+        for lbl in self._isle_stat_labels.values():
+            lbl.configure(text="—")
+        threading.Thread(target=self._fetch_island, args=(code,), daemon=True).start()
+
+    def _fetch_island(self, code: str):
+        import re
+        base = FORTNITE_ECOSYSTEM
+
+        # Normalise: accept with or without dashes, e.g. "1234-5678-9012" or "123456789012"
+        clean = code.replace("-", "").replace(" ", "")
+        if not re.fullmatch(r"\d{12}", clean):
+            self.after(0, lambda: self._show_island_error(
+                "Invalid code format.\nIsland codes are 12 digits, e.g. 1234-5678-9012"))
+            self.after(0, lambda: self._isle_btn.configure(
+                state="normal", text="Look Up Stats"))
+            return
+
+        # Re-format as XXXX-XXXX-XXXX for the API
+        fmt_code = f"{clean[:4]}-{clean[4:8]}-{clean[8:]}"
+
+        try:
+            meta_r    = requests.get(f"{base}/islands/{fmt_code}", timeout=10)
+            metrics_r = requests.get(f"{base}/islands/{fmt_code}/metrics", timeout=10)
+
+            if meta_r.status_code == 404:
+                self.after(0, lambda: self._show_island_error(
+                    f"Island '{fmt_code}' not found.\nDouble-check the code and try again."))
+                return
+            if meta_r.status_code == 400:
+                self.after(0, lambda: self._show_island_error(
+                    "Invalid island code. Make sure you're using a published island code."))
+                return
+            if not meta_r.ok:
+                self.after(0, lambda s=meta_r.status_code: self._show_island_error(
+                    f"API error ({s}). Try again in a moment."))
+                return
+
+            meta    = meta_r.json()
+            metrics = metrics_r.json() if metrics_r.ok else {}
+            self.after(0, lambda m=meta, s=metrics: self._show_island_result(m, s))
+        except requests.exceptions.Timeout:
+            self.after(0, lambda: self._show_island_error(
+                "Request timed out. Check your connection and try again."))
+        except Exception as e:
+            self.after(0, lambda: self._show_island_error(
+                "Something went wrong. Check your connection and try again."))
+        finally:
+            self.after(0, lambda: self._isle_btn.configure(
+                state="normal", text="Look Up Stats"))
+
+    def _show_island_result(self, meta, metrics):
+        title   = meta.get("title", "Unknown Island")
+        creator = meta.get("creatorCode", "")
+
+        self._isle_title.configure(text=title, text_color=C["text"])
+        self._isle_creator.configure(text=f"by {creator}" if creator else "")
+
+        def _sum(key):
+            entries = metrics.get(key) or []
+            return sum(e.get("value", 0) for e in entries) if isinstance(entries, list) else 0
+
+        def _peak(key):
+            entries = metrics.get(key) or []
+            return max((e.get("value", 0) for e in entries), default=0) if isinstance(entries, list) else 0
+
+        def _fmt(n):
+            if n >= 1_000_000: return f"{n/1_000_000:.1f}M"
+            if n >= 1_000:     return f"{n/1_000:.1f}K"
+            return str(int(n))
+
+        self._isle_stat_labels["peakCCU"].configure(text=_fmt(_peak("peakCCU")))
+        self._isle_stat_labels["plays"].configure(text=_fmt(_sum("plays")))
+        self._isle_stat_labels["uniquePlayers"].configure(text=_fmt(_sum("uniquePlayers")))
+        self._isle_stat_labels["minutesPlayed"].configure(text=_fmt(_sum("minutesPlayed")))
+
+        ret   = metrics.get("retention") or {}
+        parts = []
+        if "day1" in ret: parts.append(f"1-day retention: {ret['day1']:.0%}")
+        if "day7" in ret: parts.append(f"7-day retention: {ret['day7']:.0%}")
+        self._isle_retention.configure(text="  ·  ".join(parts))
+
+    def _show_island_error(self, msg: str):
+        self._isle_title.configure(text=msg, text_color=C["red"])
+        self._isle_creator.configure(text="")
+        self._isle_retention.configure(text="")
+        for lbl in self._isle_stat_labels.values():
+            lbl.configure(text="—")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -3137,6 +3445,9 @@ class SettingsPage(_Page):
                 ("MergeImages",    "Auto-merge Images",   "bool"),
                 ("MergeWatermarkUrl", "Merge Watermark URL", "entry"),
             ]),
+            ("Player Stats", [
+                ("apikey", "fortnite-api.com Key", "entry_secret"),
+            ]),
             ("Twitter / X", [
                 ("twitAPIKey",            "API Key",           "entry_secret"),
                 ("twitAPISecretKey",       "API Secret",        "entry_secret"),
@@ -3203,15 +3514,24 @@ class SettingsPage(_Page):
             row=row_idx, column=0, columnspan=2, sticky="w",
             padx=16, pady=(14, 4))
         row_idx += 1
-        ctk.CTkLabel(f, text="Weapon Images", text_color=C["text_dim"],
-                     font=ctk.CTkFont(size=12), anchor="e").grid(
-            row=row_idx, column=0, sticky="e", padx=(16, 8), pady=4)
-        self._cache_stat_lbl = ctk.CTkLabel(
-            f, text="Calculating…",
-            font=ctk.CTkFont(size=12), text_color=C["text_dim"], anchor="w")
-        self._cache_stat_lbl.grid(row=row_idx, column=1, sticky="w",
-                                   padx=(4, 16), pady=4)
-        row_idx += 1
+
+        def _stat_row(label: str) -> ctk.CTkLabel:
+            nonlocal row_idx
+            ctk.CTkLabel(f, text=label, text_color=C["text_dim"],
+                         font=ctk.CTkFont(size=12), anchor="e").grid(
+                row=row_idx, column=0, sticky="e", padx=(16, 8), pady=3)
+            lbl = ctk.CTkLabel(f, text="Calculating…",
+                               font=ctk.CTkFont(size=12),
+                               text_color=C["text_dim"], anchor="w")
+            lbl.grid(row=row_idx, column=1, sticky="w", padx=(4, 16), pady=3)
+            row_idx += 1
+            return lbl
+
+        self._cache_stat_lbl  = _stat_row("Weapon Images")
+        self._icons_stat_lbl  = _stat_row("Icons")
+        self._merged_stat_lbl = _stat_row("Merged")
+        self._cache_all_lbl   = _stat_row("Cache (total)")
+
         ctk.CTkLabel(f, text="", anchor="e").grid(row=row_idx, column=0)
         cache_btn_row = ctk.CTkFrame(f, fg_color="transparent")
         cache_btn_row.grid(row=row_idx, column=1, sticky="w",
@@ -3225,14 +3545,45 @@ class SettingsPage(_Page):
                       font=ctk.CTkFont(size=11), text_color=C["text"],
                       command=self._clear_all_cache).pack(side="left")
 
+    @staticmethod
+    def _folder_stats(path: str) -> tuple[int, float]:
+        """Return (file_count, size_mb) — walks subdirectories too."""
+        total, count = 0, 0
+        if os.path.isdir(path):
+            for dirpath, _, fnames in os.walk(path):
+                for fn in fnames:
+                    try:
+                        total += os.path.getsize(os.path.join(dirpath, fn))
+                        count += 1
+                    except OSError:
+                        pass
+        return count, total / (1024 * 1024)
+
     def _refresh_cache_stats(self):
         import glob
-        files     = glob.glob(os.path.join("cache", "wpn_*.png"))
-        count     = len(files)
-        size_mb   = sum(os.path.getsize(p) for p in files
+
+        # Weapon images (cache/wpn_*.png)
+        wpn_files = glob.glob(os.path.join("cache", "wpn_*.png"))
+        wpn_count = len(wpn_files)
+        wpn_mb    = sum(os.path.getsize(p) for p in wpn_files
                         if os.path.exists(p)) / (1024 * 1024)
         self._cache_stat_lbl.configure(
-            text=f"{count} weapon images  ({size_mb:.1f} MB)")
+            text=f"{wpn_count} weapon images  ({wpn_mb:.1f} MB)")
+
+        # Icons folder
+        ic_count, ic_mb = self._folder_stats("icons")
+        self._icons_stat_lbl.configure(
+            text=f"{ic_count} files  ({ic_mb:.1f} MB)")
+
+        # Merged folder (recursive — has dated subfolders)
+        mg_count, mg_mb = self._folder_stats("merged")
+        self._merged_stat_lbl.configure(
+            text=f"{mg_count} files  ({mg_mb:.1f} MB)")
+
+        # Full cache folder total
+        ca_count, ca_mb = self._folder_stats("cache")
+        self._cache_all_lbl.configure(
+            text=f"{ca_count} files  ({ca_mb:.1f} MB)")
 
     def _clear_weapon_cache(self):
         import glob
@@ -3245,14 +3596,46 @@ class SettingsPage(_Page):
         self.app.log("Weapon image cache cleared.")
 
     def _clear_all_cache(self):
-        import glob
-        for p in glob.glob(os.path.join("cache", "*")):
-            try:
-                os.remove(p)
-            except OSError:
-                pass
-        self._refresh_cache_stats()
-        self.app.log("All cache cleared.")
+        win = ctk.CTkToplevel(self)
+        win.title("Confirm Clear")
+        win.geometry("380x180")
+        win.resizable(False, False)
+        win.attributes("-topmost", True)
+        win.configure(fg_color=C["bg"])
+
+        ctk.CTkLabel(win, text="⚠  Clear All Cache?",
+                     font=ctk.CTkFont(size=16, weight="bold"),
+                     text_color=C["text"]).pack(pady=(24, 6))
+        ctk.CTkLabel(win,
+                     text="This will permanently delete all cached generated\n"
+                          "images. This cannot be undone.",
+                     font=ctk.CTkFont(size=12), text_color=C["text_dim"],
+                     justify="center").pack(pady=(0, 20))
+
+        btn_row = ctk.CTkFrame(win, fg_color="transparent")
+        btn_row.pack()
+
+        def _confirm():
+            import glob
+            win.destroy()
+            for p in glob.glob(os.path.join("cache", "*")):
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
+            self._refresh_cache_stats()
+            self.app.log("All cache cleared.")
+
+        ctk.CTkButton(btn_row, text="Yes, Clear", width=120, height=32,
+                      fg_color=C["red"], hover_color="#b02a28",
+                      font=ctk.CTkFont(size=13, weight="bold"),
+                      text_color="white",
+                      command=_confirm).pack(side="left", padx=(0, 10))
+        ctk.CTkButton(btn_row, text="Cancel", width=100, height=32,
+                      fg_color=C["card"], hover_color=C["border"],
+                      font=ctk.CTkFont(size=13), text_color=C["text_dim"],
+                      command=win.destroy).pack(side="left")
+        win.bind("<Escape>", lambda _: win.destroy())
 
     def _save(self):
         cfg = self.app.cfg
@@ -3867,7 +4250,12 @@ class WeaponsPage(_Page):
             pil    = pil.resize((size, size), PILImage.LANCZOS)
             ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil, size=(size, size))
             self._img_refs.append(ctkimg)
-            self.after(0, lambda l=lbl, i=ctkimg: l.configure(image=i))
+            def _apply(l=lbl, i=ctkimg):
+                try:
+                    l.configure(image=i)
+                except Exception:
+                    pass  # widget destroyed before image loaded
+            self.after(0, _apply)
         except Exception:
             pass
 
@@ -4095,12 +4483,12 @@ class MergerPage(_Page):
             row_idx = idx // self.THUMB_COLS
             col_idx = idx % self.THUMB_COLS
 
-            # CTkFrame wrapper — supports border_width/border_color for selection highlight
+            # Outer frame — border turns accent-colored when selected
             frame = ctk.CTkFrame(
                 gf,
                 width=self.THUMB_SIZE, height=self.THUMB_SIZE,
                 fg_color=C["card"], corner_radius=4,
-                border_width=0, border_color="white",
+                border_width=0, border_color=C["accent"],
             )
             frame.grid(row=row_idx, column=col_idx,
                        padx=self.THUMB_PAD, pady=self.THUMB_PAD)
@@ -4118,7 +4506,20 @@ class MergerPage(_Page):
             lbl.configure(cursor="hand2")
             lbl.bind("<Button-1>", lambda e, p=path: self._toggle(p))
 
-            self._thumb_labels[path] = frame   # store frame for border control
+            # Checkmark badge — shown top-right when selected
+            check = ctk.CTkLabel(
+                frame, text="✓",
+                width=20, height=20,
+                fg_color=C["accent"], corner_radius=4,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color="white",
+            )
+            check.place(relx=1.0, rely=0.0, anchor="ne", x=-4, y=4)
+            check.lower()   # hidden under siblings initially
+            check.configure(cursor="hand2")
+            check.bind("<Button-1>", lambda e, p=path: self._toggle(p))
+
+            self._thumb_labels[path] = (frame, check)
             threading.Thread(
                 target=self._load_thumb, args=(path, lbl), daemon=True
             ).start()
@@ -4145,12 +4546,16 @@ class MergerPage(_Page):
         self._update_count()
 
     def _set_border(self, path: str):
-        frame = self._thumb_labels.get(path)
-        if frame:
-            if path in self._selected:
-                frame.configure(border_width=2, border_color="white")
-            else:
-                frame.configure(border_width=0)
+        entry = self._thumb_labels.get(path)
+        if not entry:
+            return
+        frame, check = entry
+        if path in self._selected:
+            frame.configure(border_width=2, border_color=C["accent"])
+            check.lift()   # show checkmark
+        else:
+            frame.configure(border_width=0)
+            check.lower()  # hide checkmark
 
     def _select_all(self):
         self._selected = set(self._all_files)
@@ -4188,7 +4593,13 @@ class MergerPage(_Page):
 
     def _run_preview(self, files, cols, scale, bg, wm=""):
         try:
-            from ALmodules.merger import merge_files
+            try:
+                from ALmodules.merger import merge_files
+            except ImportError:
+                raise RuntimeError(
+                    "Your ALmodules/merger.py is outdated. "
+                    "Please update FNLeak to the latest version."
+                )
             os.makedirs("merged", exist_ok=True)
             tmp = os.path.join("merged", "_preview_tmp.jpg")
             merge_files(files, tmp, cols=cols, bg_color=bg, card_scale=scale,
@@ -4216,7 +4627,13 @@ class MergerPage(_Page):
 
     def _run_merge(self, files, cols, scale, bg, wm, out):
         try:
-            from ALmodules.merger import merge_files
+            try:
+                from ALmodules.merger import merge_files
+            except ImportError:
+                raise RuntimeError(
+                    "Your ALmodules/merger.py is outdated. "
+                    "Please update FNLeak to the latest version."
+                )
             merge_files(files, out, cols=cols, bg_color=bg, card_scale=scale,
                         watermark_path=wm)
             self.after(0, lambda p=out: self._show_preview(p, save_path=p))
@@ -4611,7 +5028,12 @@ class LootToolsPage(_Page):
             pil    = pil.resize((size, size), PILImage.LANCZOS)
             ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil, size=(size, size))
             self._result_refs.append(ctkimg)
-            self.after(0, lambda l=lbl, i=ctkimg: l.configure(image=i))
+            def _apply(l=lbl, i=ctkimg):
+                try:
+                    l.configure(image=i)
+                except Exception:
+                    pass  # widget destroyed before image loaded
+            self.after(0, _apply)
         except Exception:
             pass
 
@@ -5107,19 +5529,26 @@ class FNLeakApp(ctk.CTk):
             btn.pack(padx=10, pady=2)
             self._nav_buttons[key] = btn
 
-        # Forward scroll events from buttons to the scrollable canvas
+        # Forward scroll events to the scrollable canvas
         _cv = nav_scroll._parent_canvas
         def _fwd(e):
             if e.delta:
-                _cv.yview_scroll(int(-1 * (e.delta / 120)), "units")
+                # int() rounds small trackpad deltas to 0 — use round() + clamp to ±1
+                delta = round(-e.delta / 120)
+                if delta == 0:
+                    delta = 1 if e.delta < 0 else -1
+                _cv.yview_scroll(delta, "units")
             elif e.num == 4:
                 _cv.yview_scroll(-1, "units")
             elif e.num == 5:
                 _cv.yview_scroll(1, "units")
-        for btn in self._nav_buttons.values():
-            btn.bind("<MouseWheel>", _fwd, add="+")
-            btn.bind("<Button-4>",   _fwd, add="+")
-            btn.bind("<Button-5>",   _fwd, add="+")
+
+        # Bind to buttons, the scrollable frame, and the sidebar itself
+        targets = list(self._nav_buttons.values()) + [nav_scroll, sb]
+        for widget in targets:
+            widget.bind("<MouseWheel>", _fwd, add="+")
+            widget.bind("<Button-4>",   _fwd, add="+")
+            widget.bind("<Button-5>",   _fwd, add="+")
 
         return sb
 

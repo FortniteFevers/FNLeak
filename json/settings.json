@@ -4,10 +4,10 @@
   "language": "en",
   "imageFont": "BurbankBigCondensed-Black.otf",
   "sideFont": "OpenSans-Regular.ttf",
-  "placeholderUrl": "https://i.imgur.com/W22Foja.png",
-  "watermark": "",
+  "placeholderUrl": "https://github.com/FortniteFevers/FNLeak/blob/main/assets/fnleakplaceholder.png?raw=true",
+  "watermark": "FNLeak - Created by Fevers",
   "useFeaturedIfAvailable": false,
-  "iconType": "cataba",
+  "iconType": "large",
   "twitAPIKey": "",
   "twitAPISecretKey": "",
   "twitAccessToken": "",
@@ -28,5 +28,6 @@
   "ShowValues_AtStart": false,
   "TwitterSupport": false,
   "autoOpenImage": false,
-  "appearance": "Dark"
+  "appearance": "Dark",
+  "watermarkPosition": "Bottom Right"
 }
