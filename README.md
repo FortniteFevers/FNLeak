@@ -2,6 +2,8 @@
 
 > **Open-source. Locally run. Built for the community.**
 
+![Dashboard](screenshots/FNLeakDash_v1.2.0.png)
+
 ---
 
 ## The Story
