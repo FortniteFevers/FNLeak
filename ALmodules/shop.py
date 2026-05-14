@@ -862,9 +862,9 @@ def fetch_jam_tracks(language: str = "en") -> list[dict]:
 
 def watch_shop_sections(cfg: dict, tw) -> None:
     """Poll for shop hash changes and tweet when it updates."""
-    delay    = cfg["BotDelay"]
-    language = cfg["language"]
-    name_lbl = cfg["name"]
+    delay    = int(cfg.get("BotDelay", 30))
+    language = cfg.get("language", "en")
+    name_lbl = cfg.get("name", "FNLeak")
 
     print(Fore.CYAN + f"\n-- Shop Watcher --  (delay={delay}s)")
     print(Fore.YELLOW + "Press Ctrl-C to stop.\n")
