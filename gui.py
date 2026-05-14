@@ -4521,17 +4521,27 @@ class MergerPage(_Page):
 
             self._thumb_labels[path] = (frame, check)
             threading.Thread(
-                target=self._load_thumb, args=(path, lbl), daemon=True
+                target=self._load_thumb, args=(path, lbl, frame), daemon=True
             ).start()
 
-    def _load_thumb(self, path: str, lbl: ctk.CTkLabel):
+    def _load_thumb(self, path: str, lbl: ctk.CTkLabel, frame: ctk.CTkFrame):
         try:
             pil = PILImage.open(path).convert("RGB")
-            pil = pil.resize((self.THUMB_SIZE, self.THUMB_SIZE), PILImage.LANCZOS)
+            orig_w, orig_h = pil.size
+            # Preserve aspect ratio — fix height, scale width
+            thumb_h = self.THUMB_SIZE
+            thumb_w = round(thumb_h * orig_w / orig_h) if orig_h > 0 else thumb_h
+            pil    = pil.resize((thumb_w, thumb_h), PILImage.LANCZOS)
             ctkimg = ctk.CTkImage(light_image=pil, dark_image=pil,
-                                   size=(self.THUMB_SIZE, self.THUMB_SIZE))
+                                   size=(thumb_w, thumb_h))
             self._thumb_refs.append(ctkimg)
-            self.after(0, lambda l=lbl, i=ctkimg: l.configure(image=i, text=""))
+            def _apply(l=lbl, f=frame, i=ctkimg, w=thumb_w, h=thumb_h):
+                try:
+                    f.configure(width=w, height=h)
+                    l.configure(width=w, height=h, image=i, text="")
+                except Exception:
+                    pass  # widget destroyed before image loaded
+            self.after(0, _apply)
         except Exception:
             pass
 
