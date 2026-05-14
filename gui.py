@@ -1358,8 +1358,8 @@ class MonitorsPage(_Page):
     def _run_monitor(self, key: str, stop_evt: threading.Event):
         cfg   = self.app.cfg
         tw    = self.app.tw
-        delay = cfg["BotDelay"]
-        lang  = cfg["language"]
+        delay = int(cfg.get("BotDelay", 30))
+        lang  = cfg.get("language", "en")
 
         try:
             if key == "update":
