@@ -1630,6 +1630,60 @@ class ShopPage(_Page):
         except Exception as e:
             self.app.log(f"Copy failed: {e}")
 
+    def _show_section_post(self, path: str, sec_label: str, is_new: bool,
+                           leaving: str, display_date: str):
+        """Popup with pre-formatted post text + Copy Text / Copy Image buttons."""
+        lines = [f"{sec_label} | Fortnite Item Shop", f"📅 {display_date}"]
+        tags = []
+        if is_new:
+            tags.append("NEW")
+        if leaving:
+            tags.append(leaving)
+        if tags:
+            lines.append(" · ".join(tags))
+        lines.append("#Fortnite #FNLeak")
+        post_text = "\n".join(lines)
+
+        win = ctk.CTkToplevel(self)
+        win.title("Copy Post")
+        win.geometry("480x280")
+        win.resizable(False, False)
+        win.attributes("-topmost", True)
+        win.configure(fg_color=C["bg"])
+
+        ctk.CTkLabel(win, text=sec_label,
+                     font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=C["text"]).pack(pady=(14, 4))
+
+        tb = ctk.CTkTextbox(win, width=440, height=130,
+                            fg_color=C["card"], text_color=C["text"],
+                            font=ctk.CTkFont(size=12))
+        tb.pack(padx=16, pady=(0, 8))
+        tb.insert("1.0", post_text)
+        tb.configure(state="disabled")
+
+        btn_row = ctk.CTkFrame(win, fg_color="transparent")
+        btn_row.pack(pady=(0, 14))
+
+        def _copy_text():
+            win.clipboard_clear()
+            win.clipboard_append(post_text)
+
+        ctk.CTkButton(btn_row, text="Copy Text", width=120, height=32,
+                      fg_color=C["card"], hover_color=C["border"],
+                      text_color=C["text"], border_width=1, border_color=C["border"],
+                      command=_copy_text).pack(side="left", padx=6)
+        ctk.CTkButton(btn_row, text="Copy Image", width=120, height=32,
+                      fg_color=C["card"], hover_color=C["border"],
+                      text_color=C["text"], border_width=1, border_color=C["border"],
+                      command=lambda: self._copy_section(path)).pack(side="left", padx=6)
+        ctk.CTkButton(btn_row, text="Close", width=80, height=32,
+                      fg_color=C["card"], hover_color=C["border"],
+                      text_color=C["text_dim"],
+                      command=win.destroy).pack(side="left", padx=6)
+
+        win.bind("<Escape>", lambda _: win.destroy())
+
     def _show_leaving_detail(self, sec_label: str, leaving_str: str, out_date: str):
         """Show a small popup with the exact leaving date and time."""
         win = ctk.CTkToplevel(self)
@@ -1807,7 +1861,8 @@ class ShopPage(_Page):
                     hdr, text="Copy", width=60, height=26,
                     fg_color=C["card"], hover_color=C["border"],
                     font=ctk.CTkFont(size=11),
-                    command=lambda p=path: self._copy_section(p),
+                    command=lambda p=path, sl=sec_label, n=is_new, lv=leaving, dd=display_date:
+                        self._show_section_post(p, sl, n, lv, dd),
                 ).pack(side="right", padx=(0, 4))
 
                 # ── Leaving banner (own row, prominent, clickable) ────────────
