@@ -487,7 +487,7 @@ def _generate_large_card(
     # fall back to icon_url, then placeholder if needed.
     images   = item.get("images") or {}
     best_url = images.get("featured") or images.get("icon") or icon_url
-    _raw     = fetch_icon(best_url)
+    _raw     = fetch_icon(best_url, placeholder_url)
     icon_img = _raw.resize((ICON_SZ, ICON_SZ), RESAMPLE)
 
     # ── 2. Cataba rarity background at 1083×1083 ─────────────────────────────
@@ -715,7 +715,7 @@ def generate_card(
     rarity = (item.get("rarity") or {}).get("value", "common").lower()
 
     # ── 1. Download icon ──────────────────────────────────────────────────────
-    icon_img = fetch_icon(icon_url)   # 512×512 RGBA
+    icon_img = fetch_icon(icon_url, placeholder_url)   # 512×512 RGBA
 
     # ── 2. Build base composite ───────────────────────────────────────────────
     if icon_type == CardStyle.CATABA:
