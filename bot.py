@@ -31,9 +31,9 @@ from ALmodules.monitors import watch_cosmetics, watch_news, watch_notices, watch
 from ALmodules.shop import generate_shop, watch_shop_sections
 
 # ── config ────────────────────────────────────────────────────────────────────
-SETTINGS_PATH = "settings.json"
+SETTINGS_PATH = os.path.join("json", "settings.json")
 FORTNITE_API   = "https://fortnite-api.com"
-VERSION        = "1.0.0"
+VERSION        = "1.2.0"
 
 RARITY_COLORS = {
     "common":    "#636363",
@@ -96,9 +96,9 @@ def load_settings() -> dict:
         for k, v in user.items():
             defaults[k] = v
     except FileNotFoundError:
-        print(Fore.YELLOW + f"settings.json not found — using defaults. Run (reset) to create one.")
+        print(Fore.YELLOW + f"{SETTINGS_PATH} not found — using defaults. Run (reset) to create one.")
     except json.JSONDecodeError as e:
-        print(Fore.RED + f"settings.json parse error: {e}")
+        print(Fore.RED + f"{SETTINGS_PATH} parse error: {e}")
 
     # Normalise boolean-strings from the old format
     for bool_key in ("useFeaturedIfAvailable", "tweetUpdate", "tweetAes",
@@ -461,10 +461,14 @@ def cmd_merge_images(cfg: dict, tw: TwitterClient):
 
 def cmd_update_mode(cfg: dict, tw: TwitterClient):
     """Poll for cosmetic hash changes and auto-generate on update."""
+    try:
+        delay = int(cfg.get("BotDelay", 30))
+    except (TypeError, ValueError):
+        delay = 30
     watch_cosmetics(
         cfg=cfg,
         on_update=lambda: cmd_generate_cosmetics(cfg, tw),
-        delay=cfg["BotDelay"],
+        delay=delay,
         language=cfg["language"],
     )
 
@@ -485,7 +489,7 @@ def _tweet_media(tw: TwitterClient, path: str, text: str):
 
 
 def cmd_reset_settings():
-    confirm = input("Reset settings.json to defaults? (y/n): ").strip().lower()
+    confirm = input("Reset json/settings.json to defaults? (y/n): ").strip().lower()
     if confirm != "y":
         print("Cancelled.")
         return
@@ -519,9 +523,10 @@ def cmd_reset_settings():
         "ShowValues_AtStart": False,
         "TwitterSupport": False,
     }
+    os.makedirs(os.path.dirname(SETTINGS_PATH), exist_ok=True)
     with open(SETTINGS_PATH, "w") as f:
         json.dump(default_settings, f, indent=2)
-    print(Fore.GREEN + "settings.json reset.")
+    print(Fore.GREEN + "json/settings.json reset.")
 
 
 # ── banner + menu ─────────────────────────────────────────────────────────────
@@ -538,7 +543,7 @@ BANNER = Fore.CYAN + r"""
 def print_menu():
     print(Fore.GREEN + "\n- - - - - MENU - - - - -\n")
     print(Fore.RED + "- IMPORTANT -")
-    print(Fore.YELLOW + "(reset)" + Fore.GREEN + " - Reset settings.json to defaults\n")
+    print(Fore.YELLOW + "(reset)" + Fore.GREEN + " - Reset json/settings.json to defaults\n")
 
     print(Fore.CYAN + "- MAIN COMMANDS -")
     print(Fore.YELLOW + "(1)" + Fore.WHITE + " - Start update mode (auto-detects new cosmetics)")
