@@ -11,6 +11,7 @@ Fixes vs the original AutoLeak:
 
 from __future__ import annotations
 
+import json
 import io
 import time
 from typing import Callable
@@ -21,7 +22,15 @@ from PIL import Image
 
 FORTNITE_API    = "https://fortnite-api.com"
 STAGING_URL     = "https://fortnite-public-service-stage.ol.epicgames.com/fortnite/api/version"
-NOTICES_API     = "https://fortnite-api.com/v2/status"   # fn-api.com/api/emergencyNotices was often down
+NOTICES_API     = "https://status.epicgames.com/api/v2/status.json"
+
+
+def _cfg_delay(cfg: dict, default: int = 30) -> int:
+    """Settings entries can arrive as CTkEntry strings."""
+    try:
+        return int(cfg.get("BotDelay", default))
+    except (TypeError, ValueError):
+        return default
 
 
 def _get_json(url: str, params: dict | None = None, timeout: int = 15) -> dict | None:
@@ -84,7 +93,7 @@ def watch_cosmetics(
 def watch_news(cfg: dict, tw) -> None:
     """Watch for changes in the Battle Royale news feed and tweet the new tile image."""
     from ALmodules.twitter_client import TwitterClient
-    delay    = cfg["BotDelay"]
+    delay    = _cfg_delay(cfg)
     language = cfg["language"]
     name     = cfg["name"]
 
@@ -144,11 +153,9 @@ def watch_news(cfg: dict, tw) -> None:
 
 def watch_notices(cfg: dict, tw) -> None:
     """Watch for changes in Fortnite's emergency notices and tweet them."""
-    delay = cfg["BotDelay"]
+    delay = _cfg_delay(cfg)
     name  = cfg["name"]
-
-    # fortnite-api.com /v2/status is more reliable than the old fn-api.com endpoint
-    url   = f"{FORTNITE_API}/v2/status"
+    url   = NOTICES_API
 
     print(Fore.CYAN + f"\n-- Notices Watcher --  (delay={delay}s)")
     print(Fore.YELLOW + "Press Ctrl-C to stop.\n")
@@ -160,15 +167,15 @@ def watch_notices(cfg: dict, tw) -> None:
         while True:
             data = _get_json(url)
             if data:
-                current = str(data.get("data"))
+                status = data.get("status") or {}
+                current = json.dumps(status, sort_keys=True)
                 if old_data is None:
                     old_data = current
                     print(Fore.GREEN + "  Watching for notice changes…")
                 elif current != old_data:
                     print(Fore.CYAN + "\n  [!] Notice changed!")
-                    status = data.get("data") or {}
-                    page   = status.get("page") or {}
-                    msg    = page.get("status", "Unknown status")
+                    indicator = status.get("indicator", "unknown")
+                    msg       = status.get("description", "Status changed")
                     tweet_text = f"New #Fortnite notice:\n{msg}\n[{name}]"
                     if tw.ready:
                         tw.tweet(tweet_text)
@@ -191,7 +198,7 @@ def watch_staging(cfg: dict, tw) -> None:
     Poll the Epic Games staging server endpoint.
     Tweets when the version changes (indicating an upcoming patch).
     """
-    delay = cfg["BotDelay"]
+    delay = _cfg_delay(cfg)
     name  = cfg["name"]
 
     print(Fore.CYAN + f"\n-- Staging Server Watcher --  (delay={delay}s)")
