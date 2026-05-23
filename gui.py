@@ -89,6 +89,7 @@ C = {
 
 FORTNITE_API       = "https://fortnite-api.com"
 FORTNITE_ECOSYSTEM = "https://api.fortnite.com/ecosystem/v1"
+EPIC_STATUS_API    = "https://status.epicgames.com/api/v2/status.json"
 JSON_DIR      = "json"
 SETTINGS_PATH = os.path.join(JSON_DIR, "settings.json")
 
@@ -1428,15 +1429,19 @@ class MonitorsPage(_Page):
         count = 0
         while not stop.is_set():
             try:
-                r = requests.get(f"{FORTNITE_API}/v2/status", timeout=10)
-                curr = str(r.json().get("data"))
+                r = requests.get(EPIC_STATUS_API, timeout=10)
+                r.raise_for_status()
+                status = (r.json().get("status") or {})
+                curr = json.dumps(status, sort_keys=True)
                 if old is None:
                     old = curr
                     self.app.log("[Notices] Watching…")
                 elif curr != old:
                     self.app.log("[Notices] ⚠️  Status changed!")
                     if tw and tw.ready:
-                        tw.tweet(f"[{cfg['name']}] Fortnite status changed!\n{curr[:200]}")
+                        indicator = status.get("indicator", "unknown")
+                        desc = status.get("description", "Status changed")
+                        tw.tweet(f"[{cfg['name']}] Epic Games status changed: {indicator}\n{desc}")
                     old = curr
                 else:
                     count += 1
