@@ -2,7 +2,7 @@
 
 > **Open-source. Locally run. Built for the community.**
 
-![Dashboard](screenshots/FNLeakDash_v1.2.0.png)
+![Dashboard](screenshots/FNLeakDash_v1.3.0.png)
 
 ---
 
