@@ -2497,6 +2497,7 @@ class CreatorCodePage(_Page):
                                    height=44, fg_color=C["input_bg"],
                                    font=ctk.CTkFont(size=14))
         self._entry.pack(side="left", expand=True, fill="x", padx=(0, 8))
+        self._entry.insert(0, "fevers")
         self._entry.bind("<Return>", lambda _: self._lookup())
         self._search_btn = ctk.CTkButton(bar, text="Look Up", width=110, height=44,
                                           fg_color=C["accent_btn"], hover_color=C["accent"],
