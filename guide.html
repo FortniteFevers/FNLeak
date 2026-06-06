@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Cup Guide – 2026 FIFA World Cup</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>⚽</text></svg>">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <script src="https://cdn.jsdelivr.net/gh/darkroomengineering/lenis@latest/bundled/lenis.js"></script>
+  <script src="theme.js"></script>
+  <script src="auth.js" defer></script>
+  <style>
+    /* ── Guide-specific styles ── */
+    .guide-section {
+      margin-bottom: 4rem;
+    }
+    .guide-section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 0.75rem;
+    }
+    .guide-section h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+    .guide-section h2 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--gold) 0%, #ffaa00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .guide-lead {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      max-width: 680px;
+      margin-bottom: 1.5rem;
+    }
+    .guide-text {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      max-width: 680px;
+      margin-bottom: 1rem;
+    }
+
+    /* Step badge */
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: #0a0a0a;
+      font-weight: 900;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Callout box — clean, no colored border */
+    .callout {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .callout strong { color: var(--text-primary); }
+    .callout.red   { }
+    .callout.blue  { }
+    .callout.green { }
+
+    /* Two-column layout */
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    @media (max-width: 700px) { .guide-grid { grid-template-columns: 1fr; } }
+
+    /* Regions table */
+    .region-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .region-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+    .region-name {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      margin-bottom: 0.25rem;
+    }
+    .region-abbr {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+    .region-examples {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .region-spots {
+      display: inline-block;
+      margin-top: 0.6rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--gold);
+      background: var(--gold-dim);
+      border-radius: 100px;
+      padding: 0.15rem 0.6rem;
+    }
+
+    /* Table scroll wrapper for mobile */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1.25rem 0; border-radius: 12px; border: 1px solid var(--border); }
+    .table-scroll .standings-table,
+    .table-scroll .compare-table { margin: 0; border: none; border-radius: 0; }
+
+    /* Points / standings table */
+    .standings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 1.25rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .standings-table th {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .standings-table td {
+      padding: 0.7rem 0.85rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .standings-table td:first-child { color: var(--text-primary); font-weight: 600; }
+    .standings-table .pts { color: var(--gold); font-weight: 800; }
+    .standings-table .advance { background: rgba(34,197,94,0.06); }
+    .standings-table .third  { background: rgba(96,165,250,0.06); }
+
+    /* Bracket path */
+    .bracket-path {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 1.5rem 0;
+      max-width: 100%;
+    }
+    .bracket-step {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .bracket-step:first-child { border-radius: 12px 12px 0 0; }
+    .bracket-step:last-child  { border-radius: 0 0 12px 12px; }
+    .bracket-step + .bracket-step { border-top: none; }
+    .bracket-num {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--gold);
+      min-width: 60px;
+    }
+    .bracket-label { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+    .bracket-sub   { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; }
+    .bracket-final .bracket-label { color: var(--gold); }
+    .bracket-final { background: var(--gold-dim); border-color: rgba(245,200,66,0.3); }
+
+    /* Comparison table */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 1.25rem 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .compare-table th {
+      padding: 0.7rem 1rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .compare-table th:first-child { background: var(--bg-surface); color: var(--text-muted); text-align: left; }
+    .compare-table th.old  { background: rgba(148,163,184,0.08); color: var(--text-muted); }
+    .compare-table th.new2026 { background: var(--gold-dim); color: var(--gold); }
+    .compare-table td {
+      padding: 0.65rem 1rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .compare-table td:first-child { color: var(--text-primary); font-weight: 600; background: var(--bg-card); }
+    .compare-table td.old  { background: var(--bg-card); text-align: center; }
+    .compare-table td.new2026 { background: var(--gold-dim); color: var(--gold); font-weight: 700; text-align: center; }
+
+    /* Points explainer */
+    .points-grid {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1.25rem 0;
+    }
+    .points-card {
+      flex: 1;
+      min-width: 120px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+    .points-num { font-size: 2rem; font-weight: 900; margin-bottom: 0.25rem; }
+    .points-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; }
+    .points-desc  { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.2rem; }
+
+    /* Teams to know */
+    .teams-know-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .team-know-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .team-know-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .team-know-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Follow steps */
+    .follow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .follow-step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+    .follow-step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 1px solid rgba(245,200,66,0.3);
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .follow-step-title { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem; }
+    .follow-step-desc  { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* TOC sidebar */
+    .guide-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    .guide-toc {
+      /* position handled by JS — Lenis breaks native sticky */
+      will-change: transform;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+    .guide-toc-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .guide-toc a {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+    .guide-toc a:hover { color: var(--text-primary); background: var(--input-bg); }
+    .guide-toc a.toc-active {
+      color: var(--gold);
+      background: var(--gold-dim);
+      font-weight: 700;
+    }
+    @media (max-width: 900px) {
+      .guide-layout {
+        display: block; /* drop grid entirely on mobile/tablet */
+      }
+      .guide-toc { display: none; }
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 3rem 0;
+    }
+
+    /* ── Broadcast section ── */
+    .broadcast-hero {
+      background: linear-gradient(160deg, #050810 0%, #0d1830 100%);
+      border: 1px solid rgba(245,200,66,0.22);
+      border-radius: 18px;
+      padding: 2.75rem 2rem 2.25rem;
+      text-align: center;
+      margin: 1.75rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .broadcast-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(245,200,66,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .broadcast-num {
+      font-size: clamp(5rem, 14vw, 8.5rem);
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      position: relative;
+    }
+    .broadcast-num-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: rgba(245,200,66,0.55);
+      margin-top: 0.25rem;
+      margin-bottom: 1.75rem;
+      position: relative;
+    }
+    .broadcast-quote {
+      font-size: clamp(1rem, 2.8vw, 1.25rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.55;
+      max-width: 520px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .broadcast-quote em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--gold) 0%, #ffaa00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .broadcast-facts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .broadcast-fact {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      text-align: center;
+    }
+    .broadcast-fact-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+    .broadcast-fact-val {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      margin-bottom: 0.15rem;
+    }
+    .broadcast-fact-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+    }
+
+    .broadcast-suspend {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.5rem;
+      margin: 1.5rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      align-items: center;
+    }
+    .broadcast-suspend-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      width: 100%;
+      margin-bottom: 0.15rem;
+    }
+    .broadcast-suspend-item {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .broadcast-suspend-item::before {
+      content: '—';
+      color: var(--text-muted);
+    }
+
+    /* Asterisk / schedule clarification */
+    .broadcast-asterisk {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .broadcast-asterisk-header {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    .broadcast-asterisk-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .broadcast-asterisk-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.18rem 0.55rem;
+      border-radius: 100px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .broadcast-asterisk-tag.group   { background: rgba(96,165,250,0.1);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.25); }
+    .broadcast-asterisk-tag.final   { background: rgba(251,191,36,0.1);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+    .broadcast-asterisk-tag.knockout{ background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
+    .broadcast-asterisk-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      flex: 1;
+      min-width: 200px;
+    }
+    .broadcast-asterisk-desc strong { color: var(--text-primary); }
+
+    @media (max-width: 600px) {
+      .broadcast-facts { grid-template-columns: 1fr 1fr; }
+      .broadcast-hero { padding: 2rem 1.25rem 1.75rem; }
+      .broadcast-asterisk-row { flex-direction: column; gap: 0.35rem; }
+    }
+
+    /* Arrival timeline */
+    .arrival-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 1.5rem 0;
+    }
+    .arrival-step {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+    .arrival-spine {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 44px;
+      flex-shrink: 0;
+    }
+    .arrival-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+      margin-top: 3px;
+      box-shadow: 0 0 0 3px var(--gold-dim);
+    }
+    .arrival-dot.dim {
+      background: var(--border-bright);
+      box-shadow: none;
+    }
+    .arrival-line {
+      width: 2px;
+      flex: 1;
+      background: var(--border);
+      margin: 4px 0;
+      min-height: 20px;
+    }
+    .arrival-step:last-child .arrival-line { display: none; }
+    .arrival-content {
+      padding: 0 0 1.25rem 0.5rem;
+      flex: 1;
+    }
+    .arrival-time {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      margin-bottom: 0.15rem;
+    }
+    .arrival-time.dim { color: var(--text-muted); }
+    .arrival-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+    .arrival-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Transport stat cards */
+    .transport-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .transport-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .transport-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    .transport-num {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+    .transport-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    /* Gold highlight callout */
+    .callout-gold {
+      background: var(--gold-dim);
+      border: 1px solid rgba(245,200,66,0.3);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .callout-gold strong { color: var(--gold); }
+
+    /* Boston venue card */
+    .venue-highlight {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 1.5rem 0;
+    }
+    .venue-highlight-header {
+      background: linear-gradient(135deg, #0f1f3d 0%, #1a3060 100%);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .venue-highlight-flag { font-size: 1.6rem; }
+    .venue-highlight-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+    .venue-highlight-city {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 0.1rem;
+    }
+    .venue-highlight-games {
+      padding: 0.75rem 0;
+    }
+    .venue-game-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 1.5rem;
+      font-size: 0.82rem;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .venue-game-row:last-child { border-bottom: none; }
+    .venue-game-teams {
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .venue-game-date {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    /* Scale stat banner */
+    .scale-banner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .scale-stat {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+    .scale-num {
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .scale-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+    }
+    .scale-sub {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.2rem;
+    }
+
+    @media (max-width: 600px) {
+      .transport-grid { grid-template-columns: 1fr; }
+      .scale-banner { grid-template-columns: 1fr 1fr; }
+      .venue-game-row { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+    }
+
+    /* ── Mobile overrides ── */
+    @media (max-width: 700px) {
+      .guide-section { margin-bottom: 2.5rem; }
+      .guide-lead { font-size: 0.95rem; max-width: 100%; }
+      .guide-text { font-size: 0.88rem; max-width: 100%; }
+      .callout { padding: 1rem 1.1rem; font-size: 0.85rem; }
+      .points-grid { gap: 0.6rem; }
+      .points-card { padding: 0.75rem 0.9rem; min-width: 90px; }
+      .points-num { font-size: 1.6rem; }
+      .follow-step { padding: 0.85rem 1rem; gap: 0.75rem; }
+      .bracket-num { min-width: 44px; font-size: 1.1rem; }
+      .bracket-step { padding: 0.75rem 1rem; }
+      .divider { margin: 2rem 0; }
+      .region-grid { grid-template-columns: 1fr 1fr; }
+      .guide-section h2 { font-size: 1.5rem; }
+      .teams-know-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">⚽ <span>World Cup</span> <span class="logo-tail">Field Guide</span></a>
+    <ul id="navMenu">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="games.html">Games</a></li>
+      <li><a href="groups.html">Groups</a></li>
+      <li><a href="locations.html">Locations</a></li>
+      <li><a href="calendar.html">Calendar</a></li>
+      <li><a href="teams.html">Teams</a></li>
+      <li><a href="myteam.html">My Team</a></li>
+      <li><a href="guide.html" class="active">Guide</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="clerk-auth signed-out" id="authControls">
+        <button class="auth-nav-btn" id="signInBtn" type="button">Sign in</button>
+        <button class="auth-nav-btn primary" id="signUpBtn" type="button">Sign up</button>
+        <div id="userButton"></div>
+      </div>
+      <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+      <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu Modal -->
+  <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" onclick="closeMobileMenu()"></div>
+  <div class="mobile-menu-modal" id="mobileMenuModal">
+    <a href="index.html" onclick="closeMobileMenu()">Home</a>
+    <a href="games.html" onclick="closeMobileMenu()">Games</a>
+    <a href="groups.html" onclick="closeMobileMenu()">Groups</a>
+    <a href="locations.html" onclick="closeMobileMenu()">Locations</a>
+    <a href="calendar.html" onclick="closeMobileMenu()">Calendar</a>
+    <a href="teams.html" onclick="closeMobileMenu()">Teams</a>
+    <a href="myteam.html" onclick="closeMobileMenu()">My Team</a>
+    <a href="guide.html" class="active" onclick="closeMobileMenu()">Guide</a>
+  </div>
+
+  <div class="container">
+    <!-- Hero -->
+    <div class="hero" style="padding:4.5rem 1.5rem 3rem;">
+      <div class="hero-eyebrow">📖 Beginner's Guide</div>
+      <h1 style="font-size:clamp(2.2rem,5.5vw,4rem);">How the <em>World Cup</em> Works</h1>
+      <p class="hero-sub">Everything you need to know about the biggest sporting event on earth — especially what makes 2026 different.</p>
+    </div>
+
+    <div class="guide-layout">
+      <!-- Table of Contents -->
+      <aside class="guide-toc">
+        <div class="guide-toc-title">On this page</div>
+        <a href="#what">What is the World Cup?</a>
+        <a href="#qualify">Step 1 — Qualifying</a>
+        <a href="#groups">Step 2 — Group Stage</a>
+        <a href="#knockout">Step 3 — Knockout Stage</a>
+        <a href="#why2026">Why 2026 is Different</a>
+        <a href="#broadcast">The Broadcast</a>
+        <a href="#hosts">The Host Setup</a>
+        <a href="#attending">Attending a Match</a>
+        <a href="#follow">How to Follow a Team</a>
+        <a href="#standings">How Standings Work</a>
+        <a href="#teams">Teams to Know</a>
+        <a href="#tips">Quick Tips</a>
+      </aside>
+
+      <!-- Main Content -->
+      <div>
+
+        <!-- WHAT IS THE WORLD CUP -->
+        <div class="guide-section" id="what">
+          <div class="guide-section-label">⚽ The Basics</div>
+          <h2>What is the <em>World Cup?</em></h2>
+          <p class="guide-lead">The World Cup is the biggest national-team soccer tournament on earth. It happens every four years and pits countries against each other — not clubs.</p>
+          <div class="callout">
+            <strong>Club vs. Country:</strong> Teams like Arsenal, Barcelona, Real Madrid, and Inter Miami are clubs — they sign players from anywhere in the world. The World Cup is completely different: it's <strong>countries</strong>. USA, Brazil, France, Argentina, England, Japan, Morocco — each sending their best players who hold that passport.
+          </div>
+          <p class="guide-text">That's what makes it special. Lionel Messi plays for Argentina. Kylian Mbappé plays for France. They might be club teammates in Paris, but at the World Cup they're on opposite sides. The tournament runs June 11 to July 19, 2026, across 16 stadiums in the United States, Canada, and Mexico.</p>
+        </div>
+
+        <hr class="divider">
+
+        <!-- STEP 1: QUALIFYING -->
+        <div class="guide-section" id="qualify">
+          <div class="guide-section-label">📋 Step 1</div>
+          <div class="step-header">
+            <div class="step-badge">1</div>
+            <h2 style="margin:0;">Countries <em>Qualify</em></h2>
+          </div>
+          <p class="guide-text">Before the tournament even starts, every country has been fighting through its own regional qualifying. Each continent has its own league — they play games over two to three years, and only the top finishers earn a spot at the World Cup.</p>
+          <p class="guide-text">For 2026, <strong>USA, Canada, and Mexico automatically qualify</strong> as host nations. Every other country had to earn it.</p>
+
+          <div class="region-grid">
+            <div class="region-card">
+              <div class="region-name">Europe</div>
+              <div class="region-abbr">UEFA</div>
+              <div class="region-examples">England, France, Spain, Germany, Portugal, Netherlands, Italy</div>
+              <div class="region-spots">16 spots</div>
+            </div>
+            <div class="region-card">
+              <div class="region-name">South America</div>
+              <div class="region-abbr">CONMEBOL</div>
+              <div class="region-examples">Brazil, Argentina, Uruguay, Colombia, Chile</div>
+              <div class="region-spots">6 spots + 1 playoff</div>
+            </div>
+            <div class="region-card">
+              <div class="region-name">North America</div>
+              <div class="region-abbr">CONCACAF</div>
+              <div class="region-examples">USA, Mexico, Canada, Jamaica, Panama</div>
+              <div class="region-spots">6 spots + 1 playoff</div>
+            </div>
+            <div class="region-card">
+              <div class="region-name">Africa</div>
+              <div class="region-abbr">CAF</div>
+              <div class="region-examples">Morocco, Senegal, Egypt, Nigeria, Cameroon</div>
+              <div class="region-spots">9 spots + 1 playoff</div>
+            </div>
+            <div class="region-card">
+              <div class="region-name">Asia</div>
+              <div class="region-abbr">AFC</div>
+              <div class="region-examples">Japan, South Korea, Australia, Qatar, Saudi Arabia</div>
+              <div class="region-spots">8 spots + 1 playoff</div>
+            </div>
+            <div class="region-card">
+              <div class="region-name">Oceania</div>
+              <div class="region-abbr">OFC</div>
+              <div class="region-examples">New Zealand, Fiji</div>
+              <div class="region-spots">1 playoff spot</div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- STEP 2: GROUP STAGE -->
+        <div class="guide-section" id="groups">
+          <div class="guide-section-label">🏟️ Step 2</div>
+          <div class="step-header">
+            <div class="step-badge">2</div>
+            <h2 style="margin:0;">The <em>Group Stage</em></h2>
+          </div>
+          <p class="guide-text">In 2026, the 48 teams are split into <strong>12 groups of 4</strong>. Each team plays the other three teams in their group once — three games total. Points determine who moves on.</p>
+
+          <div class="points-grid">
+            <div class="points-card">
+              <div class="points-num" style="color:#22c55e;">3</div>
+              <div class="points-label">Win</div>
+              <div class="points-desc">Points earned for a win</div>
+            </div>
+            <div class="points-card">
+              <div class="points-num" style="color:#60a5fa;">1</div>
+              <div class="points-label">Draw</div>
+              <div class="points-desc">Each team gets 1 point for a tie</div>
+            </div>
+            <div class="points-card">
+              <div class="points-num" style="color:var(--red);">0</div>
+              <div class="points-label">Loss</div>
+              <div class="points-desc">No points for a loss</div>
+            </div>
+          </div>
+
+          <p class="guide-text">Here's an example of how a group table might look after all three games:</p>
+          <div class="table-scroll">
+          <table class="standings-table">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>W</th><th>D</th><th>L</th>
+                <th>GD</th><th>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="advance"><td>🇧🇷 Brazil</td><td>2</td><td>1</td><td>0</td><td>+5</td><td class="pts">7</td></tr>
+              <tr class="advance"><td>🇯🇵 Japan</td><td>1</td><td>1</td><td>1</td><td>+1</td><td class="pts">4</td></tr>
+              <tr class="third"><td>🇲🇦 Morocco</td><td>1</td><td>0</td><td>2</td><td>-2</td><td class="pts">3</td></tr>
+              <tr><td>🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</td><td>0</td><td>2</td><td>1</td><td>-4</td><td class="pts">2</td></tr>
+            </tbody>
+          </table>
+          </div>
+          <div style="display:flex;gap:1.25rem;flex-wrap:wrap;font-size:0.75rem;margin-bottom:1.25rem;">
+            <span style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;border-radius:2px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.3);display:inline-block;"></span> Auto-advance (top 2)</span>
+            <span style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;border-radius:2px;background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.3);display:inline-block;"></span> Possible advance (best 3rd-place)</span>
+          </div>
+
+          <div class="callout">
+            <strong>Who advances?</strong> The top 2 teams from each group (24 teams) automatically advance. Plus the 8 best third-place teams across all 12 groups also advance — bringing the total to 32 teams entering the knockout stage.
+          </div>
+
+          <p class="guide-text">Morocco might still advance here as a "best third-place" team if their 3 points is better than most other third-place teams. Scotland is eliminated. That's why teams don't always coast at the end — winning by more goals (goal difference) can be the tiebreaker that sends you through.</p>
+        </div>
+
+        <hr class="divider">
+
+        <!-- STEP 3: KNOCKOUT -->
+        <div class="guide-section" id="knockout">
+          <div class="guide-section-label">⚔️ Step 3</div>
+          <div class="step-header">
+            <div class="step-badge">3</div>
+            <h2 style="margin:0;">The <em>Knockout Stage</em></h2>
+          </div>
+          <p class="guide-text">Once the group stage ends, it becomes pure single-elimination. <strong>Win and move on. Lose and go home.</strong> No second chances.</p>
+
+          <div class="bracket-path">
+            <div class="bracket-step">
+              <div class="bracket-num">32</div>
+              <div><div class="bracket-label">Round of 32</div><div class="bracket-sub">Brand new in 2026 — never existed before</div></div>
+            </div>
+            <div class="bracket-step">
+              <div class="bracket-num">16</div>
+              <div><div class="bracket-label">Round of 16</div><div class="bracket-sub">16 teams remaining</div></div>
+            </div>
+            <div class="bracket-step">
+              <div class="bracket-num">8</div>
+              <div><div class="bracket-label">Quarterfinals</div><div class="bracket-sub">8 teams remaining</div></div>
+            </div>
+            <div class="bracket-step">
+              <div class="bracket-num">4</div>
+              <div><div class="bracket-label">Semifinals</div><div class="bracket-sub">4 teams remaining</div></div>
+            </div>
+            <div class="bracket-step">
+              <div class="bracket-num">3</div>
+              <div><div class="bracket-label">Third-Place Game</div><div class="bracket-sub">The two losing semifinalists play</div></div>
+            </div>
+            <div class="bracket-step bracket-final">
+              <div class="bracket-num">🏆</div>
+              <div><div class="bracket-label">Final — July 19 at MetLife Stadium</div><div class="bracket-sub">New York/New Jersey · The last 2 teams</div></div>
+            </div>
+          </div>
+
+          <div class="callout red">
+            <strong>Tied after 90 minutes?</strong> First comes extra time — two 15-minute halves. If it's still level after that, it goes to <strong>penalty kicks</strong>. Five players from each side, alternating shots. One miss, one incredible save, and a country's entire tournament can end right there. It's brutal — and it's the most nerve-wracking moment in sports.
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- WHY 2026 IS DIFFERENT -->
+        <div class="guide-section" id="why2026">
+          <div class="guide-section-label">🌟 New for 2026</div>
+          <h2>Why 2026 is <em>Different</em></h2>
+          <p class="guide-text">This is not just "another World Cup." It is <strong>the biggest one ever held</strong>. Here's how it compares to the old format:</p>
+
+          <div class="table-scroll">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th class="old">Old Format (2022 & earlier)</th>
+                <th class="new2026">2026 Format</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Teams</td><td class="old">32</td><td class="new2026">48 ↑</td></tr>
+              <tr><td>Total Matches</td><td class="old">64</td><td class="new2026">104 ↑</td></tr>
+              <tr><td>Groups</td><td class="old">8 groups of 4</td><td class="new2026">12 groups of 4</td></tr>
+              <tr><td>First Knockout Round</td><td class="old">Round of 16</td><td class="new2026">Round of 32 (new!)</td></tr>
+              <tr><td>Host Countries</td><td class="old">Usually 1</td><td class="new2026">3 — USA, Canada, Mexico</td></tr>
+              <tr><td>Host Cities</td><td class="old">Varies</td><td class="new2026">16 cities</td></tr>
+              <tr><td>Tournament Duration</td><td class="old">~32 days</td><td class="new2026">39 days</td></tr>
+            </tbody>
+          </table>
+          </div>
+
+          <div class="guide-grid">
+            <div class="callout green" style="margin:0;">
+              <strong>The upside:</strong> More countries get in. More storylines. More chances for underdogs. Nations that never made a World Cup before will be there. 16 extra matches means more soccer.
+            </div>
+            <div class="callout" style="margin:0;">
+              <strong>The tradeoff:</strong> The group stage is bigger and can feel more complicated — some third-place teams advance, which takes a little getting used to. But once knockouts start, it's pure March Madness energy.
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- THE BROADCAST -->
+        <div class="guide-section" id="broadcast">
+          <div class="guide-section-label">📺 The Broadcast</div>
+          <h2>One Game. <em>The Whole World.</em></h2>
+          <p class="guide-lead">There's something that happens during every single World Cup match that most fans never think about — and once you know it, every game feels different.</p>
+
+          <div class="broadcast-hero">
+            <div class="broadcast-num">104</div>
+            <div class="broadcast-num-label">Times the Entire World Watches One Game</div>
+            <div class="broadcast-quote">
+              When a World Cup match kicks off, it is <em>the only live soccer game on Earth.</em> Not the biggest game. The only game.
+            </div>
+          </div>
+
+          <p class="guide-text">For all 104 matches, FIFA schedules the tournament so games never overlap — meaning at any given moment there's one game, and one game only, commanding the global soccer audience. No other competition is scheduled against it. There is no other sporting event that does this at this scale.</p>
+
+          <!-- Asterisk / how it actually works -->
+          <div class="broadcast-asterisk">
+            <div class="broadcast-asterisk-header">* How the schedule actually works</div>
+            <div class="broadcast-asterisk-row">
+              <div class="broadcast-asterisk-tag group">Group Stage — Matchdays 1 &amp; 2</div>
+              <div class="broadcast-asterisk-desc">Games are <strong>staggered</strong> throughout the day in different time slots so fans can watch them back-to-back without overlap. Multiple games per day, but never at the same time.</div>
+            </div>
+            <div class="broadcast-asterisk-row">
+              <div class="broadcast-asterisk-tag final">Group Stage — Final Matchday</div>
+              <div class="broadcast-asterisk-desc">The two remaining games within each group kick off <strong>simultaneously</strong> — a FIFA rule to prevent collusion or teams altering their play based on the other result.</div>
+            </div>
+            <div class="broadcast-asterisk-row">
+              <div class="broadcast-asterisk-tag knockout">Knockout Stage</div>
+              <div class="broadcast-asterisk-desc">From the Round of 32 onwards, all matches are played <strong>fully sequentially</strong> — one game at a time. This is where the "only game on Earth" statement is truly, literally accurate.</div>
+            </div>
+          </div>
+
+          <div class="broadcast-facts">
+            <div class="broadcast-fact">
+              <div class="broadcast-fact-icon">📡</div>
+              <div class="broadcast-fact-val">1</div>
+              <div class="broadcast-fact-label">Production Company</div>
+            </div>
+            <div class="broadcast-fact">
+              <div class="broadcast-fact-icon">🌍</div>
+              <div class="broadcast-fact-val">200+</div>
+              <div class="broadcast-fact-label">Countries Broadcasting</div>
+            </div>
+            <div class="broadcast-fact">
+              <div class="broadcast-fact-icon">📺</div>
+              <div class="broadcast-fact-val">104</div>
+              <div class="broadcast-fact-label">Global Exclusives</div>
+            </div>
+          </div>
+
+          <div class="callout">
+            <strong>One camera crew runs the whole thing.</strong> Every World Cup match is recorded by a single production company called <strong>HBS (Host Broadcast Services)</strong>. Networks like Fox, BBC, and ESPN don't send their own camera operators — they buy the rights to the HBS world feed and add their own commentators on top. HBS has 24/7 access to every venue and handles the entire global broadcast for all 104 games. Every camera angle you see on TV? That's them.
+          </div>
+
+          <p class="guide-text">The result is a kind of global synchronization that no league or club competition can match. A Champions League final has competition. The Super Bowl has competition. A World Cup knockout match has the whole planet, undivided — and that happens <strong>72 times</strong> just in the knockout rounds alone.</p>
+        </div>
+
+        <hr class="divider">
+
+        <!-- HOST SETUP -->
+        <div class="guide-section" id="hosts">
+          <div class="guide-section-label">🌎 Host Nations</div>
+          <h2>The 2026 <em>Host Setup</em></h2>
+          <p class="guide-text">The tournament is spread across three countries — the United States, Canada, and Mexico — and 16 host cities. This is the first World Cup ever to be hosted by three nations simultaneously.</p>
+          <div class="callout blue">
+            <strong>Opening Match:</strong> June 11 in Mexico City at Estadio Azteca — one of the most iconic soccer stadiums in the world.<br><br>
+            <strong>The Final:</strong> July 19 at MetLife Stadium in the New York/New Jersey area — the largest stadium in the tournament with 82,500 seats.
+          </div>
+          <p class="guide-text">For fans in the US, this is a rare opportunity. The World Cup is usually held in one faraway country, but this time the biggest games — quarterfinals, semifinals, and the final — are happening in American NFL stadiums across cities like Dallas, Los Angeles, Miami, Atlanta, Seattle, and New York.</p>
+          <div style="margin-top:1.25rem;">
+            <a href="locations.html" class="btn btn-outline" style="font-size:0.85rem;">View all 16 stadiums on the map →</a>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- ATTENDING A MATCH -->
+        <div class="guide-section" id="attending">
+          <div class="guide-section-label">🎫 Game Day</div>
+          <h2>Attending a <em>Match</em></h2>
+          <p class="guide-lead">Going to a World Cup game in person is a different scale from any other sporting event. Here's exactly what to expect if you have a ticket.</p>
+
+          <!-- Arrival Timeline -->
+          <h3 style="font-size:1rem;font-weight:800;color:var(--text-primary);margin:1.75rem 0 0.25rem;letter-spacing:-0.01em;">Arrival Guide — Count Back from Kickoff</h3>
+          <p class="guide-text" style="margin-bottom:0.5rem;">Plan your arrival around this timeline. The earlier you get there, the better the experience — and the easier the commute.</p>
+
+          <div class="arrival-timeline">
+            <div class="arrival-step">
+              <div class="arrival-spine">
+                <div class="arrival-dot"></div>
+                <div class="arrival-line"></div>
+              </div>
+              <div class="arrival-content">
+                <div class="arrival-time">4 Hours Before</div>
+                <div class="arrival-title">Parking Lots Open</div>
+                <div class="arrival-desc">Surface lots and garages open. Best time to arrive if you're driving — you beat the rush and have time to tailgate before the crowds hit.</div>
+              </div>
+            </div>
+            <div class="arrival-step">
+              <div class="arrival-spine">
+                <div class="arrival-dot"></div>
+                <div class="arrival-line"></div>
+              </div>
+              <div class="arrival-content">
+                <div class="arrival-time">3 Hours Before</div>
+                <div class="arrival-title">Inner Perimeter Gates Open</div>
+                <div class="arrival-desc">Security begins screening fans into the outer stadium grounds. This is your target arrival window if you're taking transit or want a relaxed entry experience.</div>
+              </div>
+            </div>
+            <div class="arrival-step">
+              <div class="arrival-spine">
+                <div class="arrival-dot"></div>
+                <div class="arrival-line"></div>
+              </div>
+              <div class="arrival-content">
+                <div class="arrival-time">~90 Min Before</div>
+                <div class="arrival-title">Stadium Concourses Open</div>
+                <div class="arrival-desc">Grab food, find your seats, take it in. Kickoff energy builds fast — teams warm up on the pitch and the atmosphere starts early.</div>
+              </div>
+            </div>
+            <div class="arrival-step">
+              <div class="arrival-spine">
+                <div class="arrival-dot" style="background:var(--gold);box-shadow:0 0 0 4px var(--gold-dim),0 0 16px rgba(245,200,66,0.4);"></div>
+                <div class="arrival-line"></div>
+              </div>
+              <div class="arrival-content">
+                <div class="arrival-time" style="color:var(--gold);">Kickoff</div>
+                <div class="arrival-title">The Only Game on Earth</div>
+                <div class="arrival-desc">You're in. One match. The whole world watching.</div>
+              </div>
+            </div>
+            <div class="arrival-step">
+              <div class="arrival-spine">
+                <div class="arrival-dot dim"></div>
+              </div>
+              <div class="arrival-content">
+                <div class="arrival-time dim">Post-Match</div>
+                <div class="arrival-title">Plan Your Exit Early</div>
+                <div class="arrival-desc">Transit fills up fast. If you're taking the train or bus, have a plan — tens of thousands of fans hit the same exit points simultaneously. Staying 10 extra minutes after the final whistle can save you 45 minutes in the crowd.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transport Scale -->
+          <h3 style="font-size:1rem;font-weight:800;color:var(--text-primary);margin:1.75rem 0 0.25rem;letter-spacing:-0.01em;">Getting There</h3>
+          <p class="guide-text" style="margin-bottom:0;">Transit is the move. Each venue is built to handle massive fan flows. A single World Cup host stadium can move tens of thousands of fans per mode of transport:</p>
+
+          <div class="transport-grid">
+            <div class="transport-card">
+              <div class="transport-icon">🚆</div>
+              <div>
+                <div class="transport-num">22K</div>
+                <div class="transport-label">Fans by Train</div>
+              </div>
+            </div>
+            <div class="transport-card">
+              <div class="transport-icon">🚌</div>
+              <div>
+                <div class="transport-num">22K</div>
+                <div class="transport-label">Fans by Bus</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout">
+            <strong>Bottom line:</strong> Leave for the stadium at least two full hours before you need to be there. Transit systems are running extended capacity on match days, but 40,000–70,000+ fans all moving at once means queues start early at every venue.
+          </div>
+
+          <!-- Scale of the operation -->
+          <h3 style="font-size:1rem;font-weight:800;color:var(--text-primary);margin:1.75rem 0 0.75rem;letter-spacing:-0.01em;">The Scale of a World Cup Game</h3>
+          <div class="scale-banner">
+            <div class="scale-stat">
+              <div class="scale-num" style="color:var(--gold);">3,900</div>
+              <div class="scale-label">Staff Per Match</div>
+              <div class="scale-sub">FIFA game operation</div>
+            </div>
+            <div class="scale-stat">
+              <div class="scale-num" style="color:var(--text-secondary);">2,700</div>
+              <div class="scale-label">Staff Per Match</div>
+              <div class="scale-sub">Typical NFL game</div>
+            </div>
+          </div>
+          <p class="guide-text">A World Cup game requires roughly <strong>45% more staff</strong> than an NFL game at the same venue — and that's before you count the international broadcast crews, FIFA officials, and multilingual support teams. The entire infrastructure running behind what you see on the pitch is enormous.</p>
+          <p class="guide-text" style="margin-bottom:0;">Every host city goes into <strong>event-day mode starting June 10</strong> — the day before the tournament opens. Security perimeters, transit operations, and fan zones run <strong>24/7 continuously</strong> from then through the final on July 19. There is no off day.</p>
+        </div>
+
+        <hr class="divider">
+
+        <!-- HOW TO FOLLOW -->
+        <div class="guide-section" id="follow">
+          <div class="guide-section-label">👀 Following Along</div>
+          <h2>How to <em>Follow a Team</em></h2>
+          <p class="guide-text">Let's say you're following the USA. Here's what to pay attention to through the whole tournament:</p>
+          <div class="follow-steps">
+            <div class="follow-step">
+              <div class="follow-step-num">1</div>
+              <div>
+                <div class="follow-step-title">The Group Draw</div>
+                <div class="follow-step-desc">Who is in the USA's group? Did they get lucky with weak opponents, or is it a "group of death" with multiple elite teams? This determines everything about the group stage path.</div>
+              </div>
+            </div>
+            <div class="follow-step">
+              <div class="follow-step-num">2</div>
+              <div>
+                <div class="follow-step-title">Three Group Games</div>
+                <div class="follow-step-desc">Can the USA get enough points to finish top two and auto-advance? Or will they need to rely on being one of the best third-place teams? Watch the points table closely — a draw can feel like a win or a loss depending on what others are doing.</div>
+              </div>
+            </div>
+            <div class="follow-step">
+              <div class="follow-step-num">3</div>
+              <div>
+                <div class="follow-step-title">The Knockout Bracket</div>
+                <div class="follow-step-desc">Once the USA advances, who would they face in the Round of 32? Then Round of 16? This is where it becomes like March Madness — every game is survival, every loss is final.</div>
+              </div>
+            </div>
+            <div class="follow-step">
+              <div class="follow-step-num">4</div>
+              <div>
+                <div class="follow-step-title">Learn the Stars as They Emerge</div>
+                <div class="follow-step-desc">The World Cup makes legends quickly. You'll start recognizing names by Week 2. Don't worry about memorizing 48 squads upfront — let the tournament introduce them to you.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- STANDINGS -->
+        <div class="guide-section" id="standings">
+          <div class="guide-section-label">📊 Understanding Standings</div>
+          <h2>How Soccer <em>Standings Work</em></h2>
+          <p class="guide-text">In American sports, you're used to wins and losses. Soccer uses <strong>points</strong> because ties (draws) are completely normal — and they happen a lot. That's why standings look different.</p>
+          <p class="guide-text">Here's an example of a full group table with explanations:</p>
+          <div class="table-scroll">
+          <table class="standings-table">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th title="Games Played">GP</th>
+                <th title="Wins">W</th>
+                <th title="Draws">D</th>
+                <th title="Losses">L</th>
+                <th title="Goals Scored">GF</th>
+                <th title="Goals Against">GA</th>
+                <th title="Goal Difference">GD</th>
+                <th title="Points">Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="advance"><td>🇧🇷 Brazil</td><td>3</td><td>2</td><td>1</td><td>0</td><td>6</td><td>1</td><td>+5</td><td class="pts">7</td></tr>
+              <tr class="advance"><td>🇯🇵 Japan</td><td>3</td><td>1</td><td>1</td><td>1</td><td>3</td><td>2</td><td>+1</td><td class="pts">4</td></tr>
+              <tr class="third"><td>🇲🇦 Morocco</td><td>3</td><td>1</td><td>0</td><td>2</td><td>2</td><td>4</td><td>-2</td><td class="pts">3</td></tr>
+              <tr><td>🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</td><td>3</td><td>0</td><td>2</td><td>1</td><td>1</td><td>5</td><td>-4</td><td class="pts">2</td></tr>
+            </tbody>
+          </table>
+          </div>
+
+          <div class="callout">
+            <strong>Goal Difference (GD)</strong> is goals scored <em>minus</em> goals allowed. If you win 3–0, that's +3. If you lose 2–1, that's -1. It's the most common tiebreaker when teams are level on points — which is why teams don't coast when they're up big. Winning 4–0 instead of 1–0 can literally be the difference between advancing and going home.
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- TEAMS TO KNOW -->
+        <div class="guide-section" id="teams">
+          <div class="guide-section-label">🌍 Know These Teams</div>
+          <h2>Teams to <em>Watch</em></h2>
+          <p class="guide-text">Don't try to learn all 48 teams at once. Here are the ones that will matter most — whether you love them, hate them, or just need someone to root for:</p>
+          <div class="teams-know-grid">
+            <div class="team-know-card">
+              <div class="team-know-name">🇦🇷 Argentina</div>
+              <div class="team-know-desc">The defending champion. Won the 2022 World Cup in Qatar with Lionel Messi. Come to prove it wasn't a fluke.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇫🇷 France</div>
+              <div class="team-know-desc">One of the most stacked squads in the world. Won in 2018. Kylian Mbappé leads the team and is arguably the best player alive.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇧🇷 Brazil</div>
+              <div class="team-know-desc">The most decorated team in World Cup history (5 titles). Represents flair, skill, and attacking soccer. Always dangerous.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇬🇧 England</div>
+              <div class="team-know-desc">Always massive expectations, always heartbreak. Last won in 1966. Has the talent — the question is always pressure.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇺🇸 USA</div>
+              <div class="team-know-desc">The host nation trying to prove it belongs as more than just a backdrop. A young squad with a lot to prove on home soil.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇲🇽 Mexico</div>
+              <div class="team-know-desc">Huge pressure as a co-host. Soccer is central to Mexican identity and culture. The crowd at Estadio Azteca is legendary.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇪🇸 Spain</div>
+              <div class="team-know-desc">Three-time World Cup winner (2010). Known for beautiful passing soccer. Always a threat to go all the way.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇵🇹 Portugal</div>
+              <div class="team-know-desc">Cristiano Ronaldo's country — and beyond him, an incredibly talented squad. Could make a deep run.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇩🇪 Germany</div>
+              <div class="team-know-desc">Four-time world champion, always competitive. Had a rough 2022 but this team is capable of winning it all.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇲🇦 Morocco</div>
+              <div class="team-know-desc">The biggest story of 2022 — became the first African team ever to reach the semifinals. The perfect underdog.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇯🇵 Japan</div>
+              <div class="team-know-desc">Upset Germany and Spain in 2022. Fast, disciplined, tactically sharp. One of the teams that can make the tournament messy.</div>
+            </div>
+            <div class="team-know-card">
+              <div class="team-know-name">🇺🇾 Uruguay</div>
+              <div class="team-know-desc">Two-time world champion (ancient history, 1930 and 1950), but a dangerous, gritty team that punches above its weight.</div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- QUICK TIPS -->
+        <div class="guide-section" id="tips">
+          <div class="guide-section-label">💡 Quick Tips</div>
+          <h2>How to <em>Enjoy It</em></h2>
+          <p class="guide-text">The simplest way to get into it:</p>
+          <div class="follow-steps">
+            <div class="follow-step">
+              <div class="follow-step-num">1</div>
+              <div>
+                <div class="follow-step-title">Pick 3–5 teams to track</div>
+                <div class="follow-step-desc">USA, Argentina, France, Brazil — and one underdog you like (Morocco? Japan? Uruguay?). Having a rooting interest makes every game matter.</div>
+              </div>
+            </div>
+            <div class="follow-step">
+              <div class="follow-step-num">2</div>
+              <div>
+                <div class="follow-step-title">Watch the group tables, not just the scores</div>
+                <div class="follow-step-desc">Points matter more than vibes. A boring 1–0 win is sometimes better than an exciting 3–2 loss. Check where teams stand after each matchday.</div>
+              </div>
+            </div>
+            <div class="follow-step">
+              <div class="follow-step-num">3</div>
+              <div>
+                <div class="follow-step-title">Treat knockouts like March Madness</div>
+                <div class="follow-step-desc">Once the Round of 32 starts, every single game is elimination. Pick your bracket favorites and watch them survive — or crash out.</div>
+              </div>
+            </div>
+            <div class="follow-step">
+              <div class="follow-step-num">4</div>
+              <div>
+                <div class="follow-step-title">Let the legends emerge</div>
+                <div class="follow-step-desc">Don't memorize 48 squads upfront. The World Cup creates its own stars in real time. By Week 2, you'll know exactly who to watch.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:2rem;">
+            <strong>The big picture:</strong> 2026 starts as a giant 48-team sorting process, then turns into a 32-team single-elimination war. Group stage is about surviving. Knockout stage is about handling pressure. The champion is the country that can do both — for over a month.
+          </div>
+
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem;">
+            <a href="games.html" class="btn">View All 104 Matches →</a>
+            <a href="teams.html" class="btn btn-outline">Explore All 48 Teams</a>
+            <a href="calendar.html" class="btn btn-outline">Build Your Calendar</a>
+          </div>
+        </div>
+
+      </div><!-- end main content -->
+    </div><!-- end guide-layout -->
+  </div><!-- end container -->
+
+  <footer>
+    <div class="footer-inner">
+      <p>© 2026 FIFA World Cup Fan Site &nbsp;·&nbsp; Created by <a href="https://linktr.ee/zachspam06" target="_blank" rel="noopener noreferrer">Zach Andelman</a></p>
+      <p>Not affiliated with FIFA or any official organization.</p>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script>
+    const lenis = new Lenis();
+    lenis.on('scroll', () => {});
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
+    // ── TOC: smooth scroll on click ────────────────
+    const tocLinks = document.querySelectorAll('.guide-toc a[href^="#"]');
+    tocLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        lenis.scrollTo(link.getAttribute('href'), { offset: -96, duration: 1.3 });
+      });
+    });
+
+    // ── TOC: follow scroll (Lenis-compatible sticky) ─
+    (function() {
+      const toc = document.querySelector('.guide-toc');
+      if (!toc) return;
+      const content = toc.nextElementSibling; // main content column
+      const NAV = 96; // px gap from viewport top
+
+      // Measure TOC's distance from the page top once layout has settled
+      let tocDocTop = 0;
+      requestAnimationFrame(() => {
+        tocDocTop = toc.getBoundingClientRect().top; // scroll=0 at load, so this = page offset
+      });
+
+      lenis.on('scroll', ({ scroll }) => {
+        // Max we can push down: content height minus toc height minus a little breathing room
+        const maxY = content ? Math.max(0, content.offsetHeight - toc.offsetHeight - 32) : 9999;
+        const y    = Math.min(Math.max(0, scroll - tocDocTop + NAV), maxY);
+        toc.style.transform = `translateY(${y}px)`;
+      });
+
+      // Recalculate on resize
+      window.addEventListener('resize', () => {
+        tocDocTop = toc.getBoundingClientRect().top + (lenis.scroll || 0);
+      });
+    })();
+
+    // ── TOC: scroll spy (highlight active section) ─
+    (function() {
+      if (!tocLinks.length) return;
+      const sectionIds = [...tocLinks].map(a => a.getAttribute('href').slice(1));
+      const sections   = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+      function setActive(id) {
+        tocLinks.forEach(a =>
+          a.classList.toggle('toc-active', a.getAttribute('href') === '#' + id)
+        );
+      }
+
+      setActive(sectionIds[0]);
+
+      const observer = new IntersectionObserver(() => {
+        let active = sections[0];
+        sections.forEach(sec => {
+          if (sec.getBoundingClientRect().top <= window.innerHeight * 0.45) active = sec;
+        });
+        setActive(active.id);
+      }, { threshold: 0, rootMargin: '0px 0px -45% 0px' });
+
+      sections.forEach(s => observer.observe(s));
+    })();
+  </script>
+</body>
+</html>

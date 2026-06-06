@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Team – 2026 FIFA World Cup</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>⚽</text></svg>">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <script src="https://cdn.jsdelivr.net/gh/darkroomengineering/lenis@latest/bundled/lenis.js"></script>
+  <script src="theme.js"></script>
+  <script src="auth.js" defer></script>
+  <style>
+    /* ── Mode Picker ───────────────────────────────── */
+    .mode-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1.25rem; margin-bottom: 3rem;
+    }
+    @media (min-width: 900px) { .mode-grid { grid-template-columns: 1fr 1fr 1fr; } }
+    @media (max-width: 600px) { .mode-grid { grid-template-columns: 1fr; } }
+
+    .mode-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2.5rem 2rem;
+      cursor: pointer; transition: all 0.25s;
+      display: flex; flex-direction: column; gap: 1rem;
+      position: relative; overflow: hidden;
+    }
+    .mode-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, var(--gold-dim), transparent 70%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .mode-card:hover { border-color: rgba(245,200,66,0.35); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.35); }
+    .mode-card:hover::before { opacity: 1; }
+    .mode-card-icon { font-size: 2.8rem; line-height: 1; }
+    .mode-card-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; }
+    .mode-card-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+    .mode-card-features { display: flex; flex-direction: column; gap: 0.35rem; }
+    .mode-card-feat { font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; }
+    .mode-card-feat::before { content: '→'; color: var(--gold); font-weight: 700; }
+
+    /* Back bar */
+    .back-bar {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1.5rem; padding: 0.75rem 1rem;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; cursor: pointer; transition: all 0.2s;
+      width: fit-content;
+    }
+    .back-bar:hover { border-color: var(--border-bright); background: var(--bg-card-hover); }
+    .back-bar-label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); }
+
+    /* ── Pitch ─────────────────────────────────────── */
+    .pitch-outer { width: 100%; max-width: 320px; margin: 0 auto; }
+    .pitch {
+      position: relative; width: 100%; aspect-ratio: 3 / 4;
+      border-radius: 6px; overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.5);
+      background: repeating-linear-gradient(180deg,
+        #246124 0%, #246124 12.5%, #2a742a 12.5%, #2a742a 25%,
+        #246124 25%, #246124 37.5%, #2a742a 37.5%, #2a742a 50%,
+        #246124 50%, #246124 62.5%, #2a742a 62.5%, #2a742a 75%,
+        #246124 75%, #246124 87.5%, #2a742a 87.5%, #2a742a 100%);
+      user-select: none;
+    }
+    .pm { position: absolute; background: transparent; border: 1.5px solid rgba(255,255,255,0.5); pointer-events: none; }
+    .pm-hline  { top: 50%;    left: 0;   right: 0;   height: 1.5px; background: rgba(255,255,255,0.5); border: none; }
+    .pm-circle { width: 24%;  aspect-ratio: 1; top: 50%; left: 50%; transform: translate(-50%,-50%); border-radius: 50%; }
+    .pm-dot    { width: 4px;  height: 4px; border-radius: 50%; background: rgba(255,255,255,0.5); border: none; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+    .pm-pen-top  { top: 0;    left: 16%; right: 16%; height: 23%; }
+    .pm-pen-bot  { bottom: 0; left: 16%; right: 16%; height: 23%; }
+    .pm-goal-top { top: 0;    left: 32%; right: 32%; height: 9%;  background: rgba(255,255,255,0.04); }
+    .pm-goal-bot { bottom: 0; left: 32%; right: 32%; height: 9%;  background: rgba(255,255,255,0.04); }
+
+    .ptok { position: absolute; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; z-index: 3; }
+    .ptok .badge { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 800; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.55); transition: transform 0.15s; }
+    .ptok:hover .badge { transform: scale(1.2); }
+    .ptok .badge.gk  { background: #f5c842; color: #0a0a0a; }
+    .ptok .badge.def { background: #22c55e; color: #0a0a0a; }
+    .ptok .badge.mid { background: #3b82f6; color: #fff; }
+    .ptok .badge.fwd { background: #ef4444; color: #fff; }
+    .ptok .badge.empty { background: rgba(0,0,0,0.32); border-style: dashed; color: rgba(255,255,255,0.4); font-size: 1rem; }
+    .ptok .pname { font-size: 0.5rem; font-weight: 700; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,1); white-space: nowrap; max-width: 56px; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+    .ptok .prole { font-size: 0.44rem; font-weight: 600; color: rgba(255,255,255,0.62); text-shadow: 0 1px 3px rgba(0,0,0,0.9); text-align: center; }
+
+    /* ── Squad Builder Layout ──────────────────────── */
+    .builder-grid { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 760px) { .builder-grid { grid-template-columns: 1fr; } }
+    .ftabs { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .ftab { padding: 0.28rem 0.75rem; border-radius: 100px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-secondary); font-size: 0.74rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .ftab.on { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
+    .plist { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .plist-head { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; display: flex; justify-content: space-between; align-items: center; }
+    .plist-body { max-height: 500px; overflow-y: auto; }
+    .prow { display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s; font-size: 0.79rem; }
+    .prow:last-child { border-bottom: none; }
+    .prow:hover { background: var(--bg-card-hover); }
+    .prow.used { opacity: 0.32; pointer-events: none; }
+    .prow-num { width: 18px; text-align: center; font-size: 0.65rem; color: var(--text-muted); font-weight: 700; flex-shrink: 0; }
+    .prow-name { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bench-wrap { margin-top: 0.75rem; width: 100%; max-width: 320px; margin-left: auto; margin-right: auto; }
+    .bench-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
+    .bench-chip { display: flex; align-items: center; gap: 0.3rem; padding: 0.22rem 0.6rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 100px; font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); }
+    .step-n { width: 26px; height: 26px; border-radius: 50%; background: var(--gold); color: #0a0a0a; display: flex; align-items: center; justify-content: center; font-size: 0.74rem; font-weight: 800; flex-shrink: 0; }
+    .locked { opacity: 0.4; pointer-events: none; }
+    .xi-count { font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 100px; background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(245,200,66,0.2); }
+    .sim-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: none; }
+    .sim-card.show { display: block; }
+    .sim-board { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; text-align: center; padding: 2rem 1.5rem 1.25rem; }
+    .sim-side { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+    .sim-flag { font-size: 2.8rem; }
+    .sim-tname { font-size: 0.88rem; font-weight: 700; }
+    .sim-score { font-size: clamp(3rem, 9vw, 5rem); font-weight: 900; color: var(--gold); letter-spacing: -0.04em; line-height: 1; }
+    .sim-vs { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); letter-spacing: 0.1em; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.6rem; }
+    .sim-events { padding: 0 1.5rem 1.25rem; display: flex; flex-direction: column; gap: 0.1rem; }
+    .sim-evt { display: flex; align-items: center; gap: 0.55rem; padding: 0.28rem 0; font-size: 0.77rem; color: var(--text-secondary); }
+    .sim-evt-t { font-size: 0.63rem; font-weight: 700; color: var(--gold); width: 36px; flex-shrink: 0; }
+    .sim-verdict { padding: 0.65rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.85rem; font-weight: 700; text-align: center; }
+    .sprow { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-base); cursor: pointer; transition: all 0.15s; margin-bottom: 0.4rem; font-size: 0.82rem; }
+    .sprow:last-child { margin-bottom: 0; }
+    .sprow:hover { border-color: var(--border-bright); background: var(--bg-card-hover); }
+    .sprow.used { opacity: 0.35; pointer-events: none; }
+    .sprow-name { flex: 1; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── Bracket Simulator ─────────────────────────── */
+    .brnd-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+    .brnd-tab { padding: 0.4rem 1rem; border-radius: 100px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-secondary); font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .brnd-tab.on { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
+    .brnd-tab.done { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); color: #22c55e; }
+    .brnd-tab:disabled { opacity: 0.35; pointer-events: none; }
+
+    /* Group cards grid */
+    .groups-bracket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .grp-bracket-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .grp-bracket-head { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+    .grp-bracket-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); }
+    .grp-bracket-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .grp-bracket-table th { padding: 0.3rem 0.6rem; color: var(--text-muted); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-bottom: 1px solid var(--border); }
+    .grp-bracket-table th:first-child { text-align: left; }
+    .grp-bracket-table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); text-align: center; }
+    .grp-bracket-table td:first-child { text-align: left; font-weight: 600; }
+    .grp-bracket-table tr:last-child td { border-bottom: none; }
+    .grp-bracket-table tr.adv td { background: rgba(34,197,94,0.06); }
+    .grp-bracket-table tr.adv3 td { background: rgba(59,130,246,0.06); }
+    .grp-bracket-table .pts-cell { font-weight: 800; color: var(--gold); }
+    .sim-grp-btn { padding: 0.25rem 0.65rem; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-secondary); font-size: 0.65rem; font-weight: 700; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .sim-grp-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+    .sim-grp-btn.done { border-color: rgba(34,197,94,0.3); color: #22c55e; background: rgba(34,197,94,0.08); pointer-events: none; }
+
+    /* Bracket match cards */
+    .bracket-round { display: none; }
+    .bracket-round.show { display: block; }
+    .bracket-matches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.85rem; }
+    .bmatch {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; transition: border-color 0.2s;
+    }
+    .bmatch-lbl { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .bmatch-team {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.7rem 1rem; cursor: pointer; transition: background 0.15s;
+    }
+    .bmatch-team:hover:not(.tbd):not(.winner):not(.loser) { background: var(--bg-card-hover); }
+    .bmatch-team.winner { background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; }
+    .bmatch-team.loser  { opacity: 0.42; }
+    .bmatch-team.tbd    { pointer-events: none; }
+    .bmatch-flag  { font-size: 1.5rem; flex-shrink: 0; }
+    .bmatch-name  { flex: 1; font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bmatch-score { font-size: 1rem; font-weight: 900; color: var(--gold); width: 20px; text-align: center; flex-shrink: 0; }
+    .bmatch-div   { height: 1px; background: var(--border); margin: 0 1rem; }
+    .bmatch-foot  { padding: 0.5rem 1rem; display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .bsim-btn { padding: 0.25rem 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-secondary); font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .bsim-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+    .bsim-btn:disabled { opacity: 0.3; pointer-events: none; }
+
+    /* Champion card */
+    .champion-card { text-align: center; padding: 3rem 2rem; background: var(--bg-card); border: 1px solid rgba(245,200,66,0.3); border-radius: 20px; margin-top: 2rem; display: none; }
+    .champion-card.show { display: block; }
+    .champion-card .trophy { font-size: 4rem; margin-bottom: 0.5rem; }
+    .champion-card .champ-flag { font-size: 5rem; margin: 0.5rem 0; }
+    .champion-card .champ-name { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.04em; color: var(--gold); }
+
+    @keyframes popIn { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .pop-in { animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .spin { display: inline-block; animation: spin 0.7s linear infinite; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">⚽ <span>World Cup</span> <span class="logo-tail">Field Guide</span></a>
+    <ul id="navMenu">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="games.html">Games</a></li>
+      <li><a href="groups.html">Groups</a></li>
+      <li><a href="locations.html">Locations</a></li>
+      <li><a href="calendar.html">Calendar</a></li>
+      <li><a href="teams.html">Teams</a></li>
+      <li><a href="myteam.html" class="active">My Team</a></li>
+      <li><a href="guide.html">Guide</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="clerk-auth signed-out" id="authControls">
+        <button class="auth-nav-btn" id="signInBtn" type="button">Sign in</button>
+        <button class="auth-nav-btn primary" id="signUpBtn" type="button">Sign up</button>
+        <div id="userButton"></div>
+      </div>
+      <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+      <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" onclick="closeMobileMenu()"></div>
+  <div class="mobile-menu-modal" id="mobileMenuModal">
+    <a href="index.html" onclick="closeMobileMenu()">Home</a>
+    <a href="games.html" onclick="closeMobileMenu()">Games</a>
+    <a href="groups.html" onclick="closeMobileMenu()">Groups</a>
+    <a href="locations.html" onclick="closeMobileMenu()">Locations</a>
+    <a href="calendar.html" onclick="closeMobileMenu()">Calendar</a>
+    <a href="teams.html" onclick="closeMobileMenu()">Teams</a>
+    <a href="myteam.html" class="active" onclick="closeMobileMenu()">My Team</a>
+    <a href="guide.html" onclick="closeMobileMenu()">Guide</a>
+  </div>
+
+  <div class="container">
+    <div class="hero" style="padding:3rem 1.5rem 2.5rem;">
+      <div class="hero-eyebrow">⚽ Interactive Zone</div>
+      <h1 style="font-size:clamp(2rem,5vw,3rem);">My <em>Team</em></h1>
+      <p class="hero-sub" style="margin-bottom:0;">Build your dream XI or simulate the entire 2026 World Cup bracket</p>
+    </div>
+
+    <!-- ── Mode Picker ──────────────────────────────── -->
+    <div id="modePicker">
+      <div class="mode-grid">
+        <div class="mode-card" onclick="enterMode('squad')">
+          <div class="mode-card-icon">🏟️</div>
+          <div class="mode-card-title">Squad Builder</div>
+          <div class="mode-card-desc">Pick a nation, build your starting XI on a live tactical pitch, and simulate a match against any opponent.</div>
+          <div class="mode-card-features">
+            <div class="mode-card-feat">Choose from all 48 nations</div>
+            <div class="mode-card-feat">Formation presets (4-3-3, 4-2-3-1 and more)</div>
+            <div class="mode-card-feat">Live player data via API</div>
+            <div class="mode-card-feat">Match simulator with events</div>
+          </div>
+          <button class="btn" style="margin-top:0.5rem;width:fit-content;" onclick="enterMode('squad');event.stopPropagation()">Start Building →</button>
+        </div>
+        <div class="mode-card" onclick="window.location.href='bracket.html'">
+          <div class="mode-card-icon">🏆</div>
+          <div class="mode-card-title">Bracket Simulator</div>
+          <div class="mode-card-desc">Simulate the complete 2026 World Cup — all 12 groups, standings, 8 best 3rd-place teams, and the full knockout bracket.</div>
+          <div class="mode-card-features">
+            <div class="mode-card-feat">Full group stage with real standings</div>
+            <div class="mode-card-feat">8 best 3rd-place teams advance</div>
+            <div class="mode-card-feat">R32 → R16 → QF → SF → Final</div>
+            <div class="mode-card-feat">Click to pick or auto-simulate any match</div>
+          </div>
+          <a href="bracket.html" class="btn" style="margin-top:0.5rem;width:fit-content;" onclick="event.stopPropagation()">Open Bracket →</a>
+        </div>
+        <div class="mode-card" onclick="window.location.href='draft.html'" style="position:relative;overflow:hidden;">
+          <div style="position:absolute;top:1rem;right:1rem;font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;padding:0.2rem 0.55rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(245,200,66,0.3);">NEW</div>
+          <div class="mode-card-icon">🎰</div>
+          <div class="mode-card-title" style="background:linear-gradient(135deg,var(--gold) 0%,#ff8c00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">104-0</div>
+          <div class="mode-card-desc">Spin to draft 11 World Cup players in a 4-3-3. Then simulate your squad's 8-game run to the trophy.</div>
+          <div class="mode-card-features">
+            <div class="mode-card-feat">11-round spin draft (GK · 4 DEF · 3 MID · 3 FWD)</div>
+            <div class="mode-card-feat">Real players from all 48 World Cup squads</div>
+            <div class="mode-card-feat">Classic mode + Scout mode (names hidden)</div>
+            <div class="mode-card-feat">Simulate 8 games from group to Final</div>
+          </div>
+          <a href="draft.html" class="btn" style="margin-top:0.5rem;width:fit-content;background:linear-gradient(135deg,var(--gold),#e8a000);color:#0a0a0a;" onclick="event.stopPropagation()">Play 104-0 →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Squad Builder ────────────────────────────── -->
+    <div id="squadMode" style="display:none;">
+      <div class="back-bar" onclick="exitMode()">
+        <span style="color:var(--gold);font-weight:700;">←</span>
+        <span class="back-bar-label">Back to Mode Select</span>
+      </div>
+
+      <!-- API banner -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;">
+        <div style="flex:1;min-width:220px;">
+          <div style="font-size:0.88rem;font-weight:700;margin-bottom:0.2rem;">🔗 Squad data</div>
+          <div style="font-size:0.78rem;color:var(--text-secondary);">Bundled roster data loads automatically from the local football-data export.</div>
+        </div>
+        <div id="apiStatus" class="api-status" style="width:100%;padding-top:0.25rem;"></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div style="margin-bottom:2.5rem;">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div class="step-n">1</div>
+            <div><div class="section-title">Pick Your Nation</div><div class="section-sub">Choose which World Cup team you want to build</div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+          <select id="teamSelect" class="filter-select" style="flex:1;min-width:200px;"><option value="">— Select a team —</option></select>
+          <button class="btn" onclick="loadTeam()">Load Squad →</button>
+        </div>
+        <div id="squadMsg" style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-muted);"></div>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="step2" class="locked" style="margin-bottom:3rem;">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div class="step-n">2</div>
+            <div><div class="section-title">Build Your XI</div><div class="section-sub">Click a slot on the pitch, or pick from the list</div></div>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <span class="xi-count" id="xiCount">0 / 11</span>
+            <button class="btn btn-outline btn-sm" onclick="autoFill()">⚡ Auto-fill</button>
+            <button class="btn btn-outline btn-sm" onclick="clearXI()">✕ Clear</button>
+          </div>
+        </div>
+        <div class="ftabs" id="ftabs"></div>
+        <div class="builder-grid">
+          <div>
+            <div class="pitch-outer">
+              <div class="pitch" id="pitch">
+                <div class="pm pm-hline"></div><div class="pm pm-circle"></div><div class="pm pm-dot"></div>
+                <div class="pm pm-pen-top"></div><div class="pm pm-pen-bot"></div>
+                <div class="pm pm-goal-top"></div><div class="pm pm-goal-bot"></div>
+              </div>
+            </div>
+            <div class="bench-wrap">
+              <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);">Bench / Available</div>
+              <div class="bench-chips" id="benchChips"></div>
+            </div>
+          </div>
+          <div class="plist">
+            <div class="plist-head">
+              <span id="plistTitle">Squad</span>
+              <div style="display:flex;gap:0.3rem;">
+                <button id="posAll"  onclick="setPosFilter('all')"  style="padding:0.15rem 0.5rem;border-radius:100px;border:1px solid rgba(245,200,66,0.3);background:var(--gold-dim);color:var(--gold);font-size:0.65rem;font-weight:700;cursor:pointer;">All</button>
+                <button id="posGK"  onclick="setPosFilter('GK')"   style="padding:0.15rem 0.5rem;border-radius:100px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-muted);font-size:0.65rem;font-weight:700;cursor:pointer;">GK</button>
+                <button id="posDEF" onclick="setPosFilter('DEF')"  style="padding:0.15rem 0.5rem;border-radius:100px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-muted);font-size:0.65rem;font-weight:700;cursor:pointer;">DEF</button>
+                <button id="posMID" onclick="setPosFilter('MID')"  style="padding:0.15rem 0.5rem;border-radius:100px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-muted);font-size:0.65rem;font-weight:700;cursor:pointer;">MID</button>
+                <button id="posFWD" onclick="setPosFilter('FWD')"  style="padding:0.15rem 0.5rem;border-radius:100px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-muted);font-size:0.65rem;font-weight:700;cursor:pointer;">FWD</button>
+              </div>
+            </div>
+            <div class="plist-body" id="playerListBody"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="step3" class="locked" style="margin-bottom:3rem;">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div class="step-n">3</div>
+            <div><div class="section-title">Simulate Match</div><div class="section-sub">Pit your XI against another World Cup nation</div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;">
+          <select id="oppSelect" class="filter-select" style="flex:1;min-width:200px;"><option value="">— Select opponent —</option></select>
+          <button class="btn" onclick="runSimulation()" id="simBtn">▶ Kick Off</button>
+        </div>
+        <div class="sim-card" id="simCard">
+          <div class="sim-board" id="simBoard"></div>
+          <div class="sim-events" id="simEvents"></div>
+          <div class="sim-verdict" id="simVerdict"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Bracket Simulator ─────────────────────────── -->
+    <div id="bracketMode" style="display:none;">
+      <div class="back-bar" onclick="exitMode()">
+        <span style="color:var(--gold);font-weight:700;">←</span>
+        <span class="back-bar-label">Back to Mode Select</span>
+      </div>
+
+      <div class="section-header" style="margin-bottom:1.25rem;">
+        <div>
+          <div class="section-title">2026 World Cup Bracket</div>
+          <div class="section-sub">Simulate each match or let the engine decide</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn btn-outline btn-sm" onclick="simAllGroups()">⚡ Sim All Groups</button>
+          <button class="btn btn-outline btn-sm" onclick="resetBracket()" style="color:var(--red);border-color:var(--red);">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Round tabs -->
+      <div class="brnd-tabs" id="brndTabs"></div>
+
+      <!-- Group Stage -->
+      <div class="bracket-round show" id="brnd-groups">
+        <div class="groups-bracket-grid" id="groupsBracketGrid"></div>
+        <div id="advanceToR32Wrap" style="display:none;text-align:center;margin-top:1rem;">
+          <button class="btn" onclick="generateBracket()">Generate Knockout Bracket →</button>
+        </div>
+      </div>
+
+      <!-- Knockout rounds (R32, R16, QF, SF, Final) -->
+      <div class="bracket-round" id="brnd-r32">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div><div class="section-title">Round of 32</div><div class="section-sub" id="r32sub"></div></div>
+          <button class="btn btn-outline btn-sm" onclick="simAllRound('r32')">⚡ Sim All</button>
+        </div>
+        <div class="bracket-matches-grid" id="r32grid"></div>
+      </div>
+      <div class="bracket-round" id="brnd-r16">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div><div class="section-title">Round of 16</div><div class="section-sub" id="r16sub"></div></div>
+          <button class="btn btn-outline btn-sm" onclick="simAllRound('r16')">⚡ Sim All</button>
+        </div>
+        <div class="bracket-matches-grid" id="r16grid"></div>
+      </div>
+      <div class="bracket-round" id="brnd-qf">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div><div class="section-title">Quarter-Finals</div></div>
+          <button class="btn btn-outline btn-sm" onclick="simAllRound('qf')">⚡ Sim All</button>
+        </div>
+        <div class="bracket-matches-grid" id="qfgrid"></div>
+      </div>
+      <div class="bracket-round" id="brnd-sf">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div><div class="section-title">Semi-Finals</div></div>
+          <button class="btn btn-outline btn-sm" onclick="simAllRound('sf')">⚡ Sim All</button>
+        </div>
+        <div class="bracket-matches-grid" id="sfgrid"></div>
+      </div>
+      <div class="bracket-round" id="brnd-final">
+        <div class="section-header" style="margin-bottom:1rem;">
+          <div><div class="section-title">🏆 The Final</div></div>
+          <button class="btn btn-outline btn-sm" onclick="simAllRound('final')">⚡ Sim All</button>
+        </div>
+        <div class="bracket-matches-grid" id="finalgrid"></div>
+        <div class="champion-card" id="championCard">
+          <div class="trophy">🏆</div>
+          <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:0.5rem;">2026 World Cup Champion</div>
+          <div class="champ-flag pop-in" id="champFlag"></div>
+          <div class="champ-name pop-in" id="champName"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slot Picker Modal -->
+  <div class="modal-backdrop" id="slotPickerBackdrop" onclick="handleSlotBdClick(event)">
+    <div class="modal" id="slotPickerModal" data-lenis-prevent style="max-width:460px;">
+      <div class="modal-header">
+        <div class="modal-title" id="spTitle">Pick Player</div>
+        <button class="modal-close" onclick="closeSlotPicker()">✕</button>
+      </div>
+      <div class="modal-body" id="spBody"></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <p>© 2026 FIFA World Cup Fan Site &nbsp;·&nbsp; Created by <a href="https://linktr.ee/zachspam06" target="_blank" rel="noopener noreferrer">Zach Andelman</a></p>
+      <p>Not affiliated with FIFA or any official organization.</p>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script>
+    const lenis = new Lenis();
+    lenis.on('scroll', () => {});
+    function raf(t) { lenis.raf(t); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
+    // ── Shared state ─────────────────────────────────
+    const BUNDLED_SQUADS_URL = 'football-data/wc-2026-teams.json';
+    let teamsData = {};
+    let wcTeams   = [];
+
+    // ── Mode ─────────────────────────────────────────
+    function enterMode(mode) {
+      document.getElementById('modePicker').style.display = 'none';
+      document.getElementById('squadMode').style.display   = mode === 'squad'   ? 'block' : 'none';
+      document.getElementById('bracketMode').style.display = mode === 'bracket' ? 'block' : 'none';
+      if (mode === 'bracket') initBracketUI();
+    }
+    function exitMode() {
+      document.getElementById('modePicker').style.display   = 'block';
+      document.getElementById('squadMode').style.display    = 'none';
+      document.getElementById('bracketMode').style.display  = 'none';
+    }
+
+    // ── Helpers ──────────────────────────────────────
+    function normName(s) { return (s||'').toLowerCase().replace(/[^a-z]/g,''); }
+    function matchApiTeam(at) {
+      const all = Object.values(GROUPS).flat();
+      for (const c of [at.name, at.shortName, at.tla]) {
+        const hit = all.find(t => normName(t) === normName(c) || t === c);
+        if (hit) return hit;
+      }
+      return all.find(t => normName(at.name).includes(normName(t)) || normName(t).includes(normName(at.name))) || null;
+    }
+    function calcAge(dob) {
+      if (!dob) return null;
+      const b = new Date(dob), now = new Date('2026-06-11');
+      let age = now.getFullYear() - b.getFullYear();
+      if (now.getMonth() - b.getMonth() < 0 || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--;
+      return age;
+    }
+    function posCat(pos) {
+      const p = (pos||'').toLowerCase();
+      if (p.includes('goalkeeper')) return 'GK';
+      if (p.includes('defence')||p.includes('defender')) return 'DEF';
+      if (p.includes('midfield')) return 'MID';
+      return 'FWD';
+    }
+    function posClass(cat) { return {GK:'gk',DEF:'def',MID:'mid',FWD:'fwd'}[cat]||'mid'; }
+    function shortName(n) { if (!n) return '?'; const p = n.split(' '); return p[p.length-1]; }
+    function simpleHash(s) { let h=0; for (const c of s) h=(h*31+c.charCodeAt(0))&0xffff; return h; }
+    function poissonRand(λ) {
+      const L = Math.exp(-Math.min(λ,20)); let k=0, p=1;
+      do { k++; p*=Math.random(); } while (p>L);
+      return k-1;
+    }
+    function setStatus(msg, type) { const el=document.getElementById('apiStatus'); el.textContent=msg; el.className='api-status'+(type?' '+type:''); }
+
+    // ── Roster data ──────────────────────────────────
+    function applySquadsData(data) {
+      teamsData = {};
+      wcTeams = data.teams || [];
+      wcTeams.forEach(at => {
+        const n = matchApiTeam(at);
+        if (n && at.squad) teamsData[n] = { squad: at.squad, apiId: at.id };
+      });
+      return Object.keys(teamsData).length;
+    }
+    async function loadBundledSquads() {
+      try {
+        const res = await fetch(BUNDLED_SQUADS_URL, { cache: 'no-store' });
+        if (!res.ok) return 0;
+        const data = await res.json();
+        if (!data?.teams?.length) return 0;
+        return applySquadsData(data);
+      } catch(e) {
+        return 0;
+      }
+    }
+
+    // ── Populate dropdowns ───────────────────────────
+    const ALL_TEAMS_FLAT = [];
+    for (const [g,teams] of Object.entries(GROUPS)) teams.forEach(t => ALL_TEAMS_FLAT.push({name:t,group:g}));
+    ALL_TEAMS_FLAT.sort((a,b) => a.name.localeCompare(b.name));
+    const teamSel = document.getElementById('teamSelect');
+    const oppSel  = document.getElementById('oppSelect');
+    ALL_TEAMS_FLAT.forEach(t => {
+      teamSel.appendChild(new Option(`${getFlag(t.name)} ${t.name}  (Group ${t.group})`, t.name));
+      oppSel.appendChild(new Option(`${getFlag(t.name)} ${t.name}`, t.name));
+    });
+
+    // ════════════════════════════════════════════════
+    // ── SQUAD BUILDER ────────────────────────────────
+    // ════════════════════════════════════════════════
+    const FORMATIONS = {
+      '4-3-3':   { slots: [{pos:'GK',role:'GK',x:50,y:88},{pos:'DEF',role:'LB',x:14,y:70},{pos:'DEF',role:'CB',x:34,y:72},{pos:'DEF',role:'CB',x:66,y:72},{pos:'DEF',role:'RB',x:86,y:70},{pos:'MID',role:'CM',x:22,y:48},{pos:'MID',role:'CM',x:50,y:46},{pos:'MID',role:'CM',x:78,y:48},{pos:'FWD',role:'LW',x:18,y:20},{pos:'FWD',role:'ST',x:50,y:15},{pos:'FWD',role:'RW',x:82,y:20}] },
+      '4-2-3-1': { slots: [{pos:'GK',role:'GK',x:50,y:88},{pos:'DEF',role:'LB',x:14,y:72},{pos:'DEF',role:'CB',x:34,y:74},{pos:'DEF',role:'CB',x:66,y:74},{pos:'DEF',role:'RB',x:86,y:72},{pos:'MID',role:'CDM',x:36,y:58},{pos:'MID',role:'CDM',x:64,y:58},{pos:'MID',role:'LM',x:16,y:38},{pos:'MID',role:'CAM',x:50,y:36},{pos:'MID',role:'RM',x:84,y:38},{pos:'FWD',role:'ST',x:50,y:16}] },
+      '4-4-2':   { slots: [{pos:'GK',role:'GK',x:50,y:88},{pos:'DEF',role:'LB',x:13,y:70},{pos:'DEF',role:'CB',x:34,y:72},{pos:'DEF',role:'CB',x:66,y:72},{pos:'DEF',role:'RB',x:87,y:70},{pos:'MID',role:'LM',x:13,y:48},{pos:'MID',role:'CM',x:37,y:48},{pos:'MID',role:'CM',x:63,y:48},{pos:'MID',role:'RM',x:87,y:48},{pos:'FWD',role:'ST',x:34,y:18},{pos:'FWD',role:'ST',x:66,y:18}] },
+      '3-5-2':   { slots: [{pos:'GK',role:'GK',x:50,y:88},{pos:'DEF',role:'CB',x:26,y:72},{pos:'DEF',role:'CB',x:50,y:74},{pos:'DEF',role:'CB',x:74,y:72},{pos:'MID',role:'LWB',x:10,y:52},{pos:'MID',role:'CM',x:28,y:48},{pos:'MID',role:'CM',x:50,y:44},{pos:'MID',role:'CM',x:72,y:48},{pos:'MID',role:'RWB',x:90,y:52},{pos:'FWD',role:'ST',x:34,y:18},{pos:'FWD',role:'ST',x:66,y:18}] },
+      '5-3-2':   { slots: [{pos:'GK',role:'GK',x:50,y:88},{pos:'DEF',role:'LWB',x:8,y:66},{pos:'DEF',role:'CB',x:24,y:72},{pos:'DEF',role:'CB',x:50,y:75},{pos:'DEF',role:'CB',x:76,y:72},{pos:'DEF',role:'RWB',x:92,y:66},{pos:'MID',role:'CM',x:28,y:48},{pos:'MID',role:'CM',x:50,y:44},{pos:'MID',role:'CM',x:72,y:48},{pos:'FWD',role:'ST',x:34,y:18},{pos:'FWD',role:'ST',x:66,y:18}] },
+    };
+
+    let currentTeam = null, currentFormation = '4-3-3', startingXI = new Array(11).fill(null), posFilter = 'all', _pickerSlot = null;
+
+    function renderFormationTabs() {
+      document.getElementById('ftabs').innerHTML = Object.keys(FORMATIONS).map(f =>
+        `<button class="ftab ${f===currentFormation?'on':''}" onclick="setFormation('${f}')">${f}</button>`
+      ).join('');
+    }
+    function setFormation(f) {
+      currentFormation=f; startingXI=new Array(11).fill(null);
+      renderFormationTabs(); renderPitch(); renderPlayerList(); renderBench(); updateXICount();
+    }
+    function loadTeam() {
+      const name = document.getElementById('teamSelect').value;
+      if (!name) return;
+      currentTeam=name; startingXI=new Array(11).fill(null); posFilter='all';
+      document.getElementById('step2').classList.remove('locked');
+      document.getElementById('step3').classList.add('locked');
+      document.getElementById('simCard').classList.remove('show');
+      const msg = document.getElementById('squadMsg');
+      if (!teamsData[name]) msg.textContent='Squad data is unavailable for this team.';
+      else msg.textContent=`✓ ${teamsData[name].squad.length} players loaded for ${name}`;
+      renderFormationTabs(); renderPitch(); renderPlayerList(); renderBench();
+    }
+    function renderPitch() {
+      const pitch=document.getElementById('pitch'), slots=FORMATIONS[currentFormation].slots;
+      pitch.querySelectorAll('.ptok').forEach(e=>e.remove());
+      slots.forEach((slot,i) => {
+        const player=startingXI[i], cat=player?posCat(player.position):slot.pos;
+        const tok=document.createElement('div'); tok.className='ptok';
+        tok.style.left=slot.x+'%'; tok.style.top=slot.y+'%';
+        if (player) {
+          tok.innerHTML=`<div class="badge ${posClass(cat)}">${player.shirtNumber??'#'}</div><div class="pname">${shortName(player.name)}</div><div class="prole">${slot.role}</div>`;
+          tok.onclick=()=>removeFromSlot(i);
+        } else {
+          tok.innerHTML=`<div class="badge empty">+</div><div class="prole" style="color:rgba(255,255,255,0.5);">${slot.role}</div>`;
+          tok.onclick=()=>openSlotPicker(i);
+        }
+        pitch.appendChild(tok);
+      });
+    }
+    function setPosFilter(f) {
+      posFilter=f;
+      ['all','GK','DEF','MID','FWD'].forEach(k => {
+        const btn=document.getElementById('pos'+(k==='all'?'All':k)); if(!btn)return;
+        const on=k===f;
+        btn.style.background=on?'var(--gold-dim)':'var(--input-bg)';
+        btn.style.color=on?'var(--gold)':'var(--text-muted)';
+        btn.style.borderColor=on?'rgba(245,200,66,0.3)':'var(--border)';
+      });
+      renderPlayerList();
+    }
+    function renderPlayerList() {
+      const body=document.getElementById('playerListBody'), squad=teamsData[currentTeam]?.squad||[], inXI=new Set(startingXI.filter(Boolean).map(p=>p.name));
+      let rows=squad; if(posFilter!=='all') rows=rows.filter(p=>posCat(p.position)===posFilter);
+      const po={GK:0,DEF:1,MID:2,FWD:3};
+      rows=[...rows].sort((a,b)=>(po[posCat(a.position)]??4)-(po[posCat(b.position)]??4)||(a.shirtNumber??99)-(b.shirtNumber??99));
+      if(!squad.length){body.innerHTML='<div style="padding:1.5rem;text-align:center;font-size:0.8rem;color:var(--text-muted);">Roster data unavailable</div>';return;}
+      const pc={GK:'var(--gold)',DEF:'#22c55e',MID:'#60a5fa',FWD:'var(--red)'};
+      body.innerHTML=rows.map(p=>{const cat=posCat(p.position),age=calcAge(p.dateOfBirth),used=inXI.has(p.name);
+        return`<div class="prow ${used?'used':''}" onclick="quickAssign('${p.name.replace(/'/g,"\\'")}')">
+          <div class="prow-num" style="color:${pc[cat]};">${p.shirtNumber??'—'}</div>
+          <span style="font-size:0.56rem;font-weight:700;padding:0.1rem 0.3rem;border-radius:4px;background:${pc[cat]}22;color:${pc[cat]};flex-shrink:0;">${cat}</span>
+          <div class="prow-name">${p.name}</div>
+          <div style="font-size:0.68rem;color:var(--text-muted);flex-shrink:0;">${age??'—'}</div>
+        </div>`;
+      }).join('');
+    }
+    function quickAssign(playerName) {
+      const squad=teamsData[currentTeam]?.squad||[], player=squad.find(p=>p.name===playerName); if(!player)return;
+      const existIdx=startingXI.findIndex(p=>p?.name===playerName);
+      if(existIdx!==-1){startingXI[existIdx]=null;renderPitch();renderPlayerList();renderBench();updateXICount();checkStep3();return;}
+      const cat=posCat(player.position), slots=FORMATIONS[currentFormation].slots;
+      let idx=slots.findIndex((s,i)=>s.pos===cat&&!startingXI[i]);
+      if(idx===-1) idx=startingXI.findIndex(s=>s===null);
+      if(idx===-1){showToast('Your XI is full — remove a player first');return;}
+      startingXI[idx]=player; renderPitch(); renderPlayerList(); renderBench(); updateXICount(); checkStep3();
+    }
+    function openSlotPicker(slotIdx) {
+      _pickerSlot=slotIdx;
+      const slot=FORMATIONS[currentFormation].slots[slotIdx], squad=teamsData[currentTeam]?.squad||[], inXI=new Set(startingXI.filter(Boolean).map(p=>p.name));
+      document.getElementById('spTitle').textContent=`Pick ${slot.role} — ${slot.pos}`;
+      const sorted=[...squad].sort((a,b)=>(posCat(a.position)===slot.pos?0:1)-(posCat(b.position)===slot.pos?0:1)||(a.shirtNumber??99)-(b.shirtNumber??99));
+      const pc={GK:'var(--gold)',DEF:'#22c55e',MID:'#60a5fa',FWD:'var(--red)'};
+      document.getElementById('spBody').innerHTML=!squad.length?'<div style="color:var(--text-muted);">Roster data unavailable.</div>':
+        sorted.map(p=>{const cat=posCat(p.position),age=calcAge(p.dateOfBirth),used=inXI.has(p.name);
+          return`<div class="sprow ${used?'used':''}" onclick="assignToSlot('${p.name.replace(/'/g,"\\'")}')">
+            <span style="font-size:0.6rem;font-weight:700;padding:0.12rem 0.4rem;border-radius:4px;background:${pc[cat]}22;color:${pc[cat]};flex-shrink:0;">${cat}</span>
+            <div class="sprow-name">${p.name}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);">#${p.shirtNumber??'—'} · ${age??'—'} yrs</div>
+          </div>`;
+        }).join('');
+      document.getElementById('slotPickerBackdrop').classList.add('open'); lenis.stop();
+    }
+    function assignToSlot(playerName) {
+      const player=teamsData[currentTeam]?.squad?.find(p=>p.name===playerName); if(!player||_pickerSlot===null)return;
+      const prev=startingXI.findIndex(p=>p?.name===playerName); if(prev!==-1) startingXI[prev]=null;
+      startingXI[_pickerSlot]=player; closeSlotPicker(); renderPitch(); renderPlayerList(); renderBench(); updateXICount(); checkStep3();
+    }
+    function removeFromSlot(i){startingXI[i]=null;renderPitch();renderPlayerList();renderBench();updateXICount();checkStep3();}
+    function closeSlotPicker(){document.getElementById('slotPickerBackdrop').classList.remove('open');lenis.start();_pickerSlot=null;}
+    function handleSlotBdClick(e){if(e.target===document.getElementById('slotPickerBackdrop'))closeSlotPicker();}
+    function autoFill() {
+      const squad=teamsData[currentTeam]?.squad||[]; if(!squad.length){showToast('Roster data unavailable');return;}
+      const slots=FORMATIONS[currentFormation].slots, newXI=new Array(11).fill(null), used=new Set();
+      const ps=p=>{const a=calcAge(p.dateOfBirth); return a===null?1:(a>=24&&a<=30?3:a>=21?2:a>30&&a<=34?2:1);};
+      const byPos={GK:[],DEF:[],MID:[],FWD:[]};
+      squad.forEach(p=>byPos[posCat(p.position)].push(p));
+      Object.values(byPos).forEach(arr=>arr.sort((a,b)=>ps(b)-ps(a)));
+      slots.forEach((slot,i)=>{const pool=byPos[slot.pos].filter(p=>!used.has(p.name));if(pool.length){newXI[i]=pool[0];used.add(pool[0].name);}});
+      const left=squad.filter(p=>!used.has(p.name));
+      newXI.forEach((s,i)=>{if(!s&&left.length){newXI[i]=left.shift();used.add(newXI[i].name);}});
+      startingXI=newXI; renderPitch(); renderPlayerList(); renderBench(); updateXICount(); checkStep3();
+    }
+    function clearXI(){startingXI=new Array(11).fill(null);renderPitch();renderPlayerList();renderBench();updateXICount();checkStep3();}
+    function renderBench() {
+      const squad=teamsData[currentTeam]?.squad||[], inXI=new Set(startingXI.filter(Boolean).map(p=>p.name));
+      const bench=squad.filter(p=>!inXI.has(p.name));
+      const pc={GK:'var(--gold)',DEF:'#22c55e',MID:'#60a5fa',FWD:'var(--red)'};
+      document.getElementById('benchChips').innerHTML=bench.slice(0,12).map(p=>`<div class="bench-chip"><span style="font-size:0.55rem;font-weight:700;color:${pc[posCat(p.position)]};">${posCat(p.position)}</span>${shortName(p.name)}</div>`).join('')+(bench.length>12?`<div class="bench-chip" style="color:var(--text-muted);">+${bench.length-12}</div>`:'');
+    }
+    function updateXICount() {
+      const n=startingXI.filter(Boolean).length, el=document.getElementById('xiCount');
+      el.textContent=`${n} / 11`; el.style.background=n===11?'rgba(34,197,94,0.15)':'var(--gold-dim)';
+      el.style.color=n===11?'#22c55e':'var(--gold)'; el.style.borderColor=n===11?'rgba(34,197,94,0.25)':'rgba(245,200,66,0.2)';
+    }
+    function checkStep3(){document.getElementById('step3').classList.toggle('locked',!startingXI.every(Boolean));}
+
+    // Match sim (squad mode)
+    function teamPower(squad) {
+      if(!squad?.length) return 0.75;
+      return squad.slice(0,11).reduce((s,p)=>{const a=calcAge(p.dateOfBirth)??27;return s+(a>=24&&a<=30?1:a>=22?.88:a>30&&a<=33?.92:a>33?.78:.82);},0)/Math.min(squad.length,11);
+    }
+    function goalEvents(n,teamName,squad) {
+      const scorers=(squad||[]).filter(p=>posCat(p.position)!=='GK');
+      return Array.from({length:n},()=>({minute:Math.floor(Math.random()*89)+1,label:`⚽ ${shortName(scorers.length?scorers[Math.floor(Math.random()*Math.min(scorers.length,8))].name:teamName)} (${teamName})`}));
+    }
+    async function runSimulation() {
+      const oppName=document.getElementById('oppSelect').value; if(!oppName)return;
+      const btn=document.getElementById('simBtn'); btn.innerHTML='<span class="spin">⚽</span>'; btn.disabled=true;
+      await new Promise(r=>setTimeout(r,1200));
+      const myXI=startingXI.filter(Boolean), oppSquad=teamsData[oppName]?.squad||[];
+      const myPow=teamPower(myXI)+(Math.random()*.3-.15), oppPow=teamPower(oppSquad)+(Math.random()*.3-.15)+(simpleHash(oppName)%20)/100-.1;
+      const myG=poissonRand(Math.max(0.3,myPow*1.4)), oppG=poissonRand(Math.max(0.3,oppPow*1.4));
+      const events=[...goalEvents(myG,currentTeam,myXI),...goalEvents(oppG,oppName,oppSquad)].sort((a,b)=>a.minute-b.minute);
+      const simCard=document.getElementById('simCard'); simCard.classList.add('show');
+      document.getElementById('simBoard').innerHTML=`<div class="sim-side"><div class="sim-flag">${getFlag(currentTeam)}</div><div class="sim-tname">${currentTeam}</div><div class="sim-score pop-in" id="myScore">—</div></div><div class="sim-vs">FT</div><div class="sim-side"><div class="sim-flag">${getFlag(oppName)}</div><div class="sim-tname">${oppName}</div><div class="sim-score pop-in" id="oppScore">—</div></div>`;
+      await new Promise(r=>setTimeout(r,300));
+      document.getElementById('myScore').textContent=myG; document.getElementById('oppScore').textContent=oppG;
+      document.getElementById('simEvents').innerHTML=events.length?events.map(e=>`<div class="sim-evt"><span class="sim-evt-t">${e.minute}'</span>${e.label}</div>`).join(''):'<div style="font-size:0.78rem;color:var(--text-muted);padding:0.4rem 0;">0-0 draw — a clean sheet!</div>';
+      const vEl=document.getElementById('simVerdict');
+      if(myG>oppG){vEl.textContent=`🏆 ${currentTeam} WIN!`;vEl.style.color='#22c55e';}
+      else if(myG<oppG){vEl.textContent=`😓 ${oppName} win.`;vEl.style.color='var(--red)';}
+      else{vEl.textContent=`🤝 Draw! ${myG}-${oppG}`;vEl.style.color='var(--gold)';}
+      simCard.scrollIntoView({behavior:'smooth',block:'nearest'});
+      btn.innerHTML='▶ Simulate Again'; btn.disabled=false;
+    }
+
+    // ════════════════════════════════════════════════
+    // ── BRACKET SIMULATOR ────────────────────────────
+    // ════════════════════════════════════════════════
+    const GROUP_KEYS = Object.keys(GROUPS);
+    let groupResults = {}; // { A: [{name,pts,gf,ga,w,d,l}, ...sorted] }
+    let brackets = { r32:[], r16:[], qf:[], sf:[], final:[], third:[] };
+    let currentRound = 'groups';
+
+    // R32 seeding: [slot1_source, slot2_source]
+    // source: {type:'winner'|'runner'|'third3', group:'A'|...|'best_n'}
+    const R32_SLOTS = [
+      [{t:'W',g:'A'},{t:'R',g:'B'}], [{t:'W',g:'C'},{t:'R',g:'D'}],
+      [{t:'W',g:'E'},{t:'R',g:'F'}], [{t:'W',g:'G'},{t:'R',g:'H'}],
+      [{t:'W',g:'I'},{t:'R',g:'J'}], [{t:'W',g:'K'},{t:'R',g:'L'}],
+      [{t:'R',g:'A'},{t:'W',g:'B'}], [{t:'R',g:'C'},{t:'W',g:'D'}],
+      [{t:'R',g:'E'},{t:'W',g:'F'}], [{t:'R',g:'G'},{t:'W',g:'H'}],
+      [{t:'R',g:'I'},{t:'W',g:'J'}], [{t:'R',g:'K'},{t:'W',g:'L'}],
+      [{t:'T',n:0},{t:'T',n:1}], [{t:'T',n:2},{t:'T',n:3}],
+      [{t:'T',n:4},{t:'T',n:5}], [{t:'T',n:6},{t:'T',n:7}],
+    ];
+    const ROUND_ORDER = ['groups','r32','r16','qf','sf','final'];
+    const ROUND_LABELS = {groups:'Group Stage',r32:'Round of 32',r16:'Round of 16',qf:'Quarter-Finals',sf:'Semi-Finals',final:'Final'};
+
+    function initBracketUI() {
+      renderBracketTabs();
+      renderGroupsBracket();
+      showBracketRound('groups');
+    }
+
+    function renderBracketTabs() {
+      const tabs = document.getElementById('brndTabs');
+      tabs.innerHTML = ROUND_ORDER.map(r => {
+        const done = isBracketRoundDone(r);
+        const locked = r !== 'groups' && !brackets.r32.length && r !== 'r32';
+        return `<button class="brnd-tab ${r===currentRound?'on':''} ${done&&r!==currentRound?'done':''}" onclick="showBracketRound('${r}')">${ROUND_LABELS[r]}</button>`;
+      }).join('');
+    }
+
+    function isBracketRoundDone(r) {
+      if (r === 'groups') return Object.keys(groupResults).length === 12;
+      return brackets[r]?.length > 0 && brackets[r].every(m => m.winner);
+    }
+
+    function showBracketRound(r) {
+      currentRound = r;
+      ROUND_ORDER.forEach(x => {
+        const el = document.getElementById('brnd-'+x);
+        if (el) el.classList.toggle('show', x === r);
+      });
+      renderBracketTabs();
+    }
+
+    // ── Group Stage ──────────────────────────────────
+    function renderGroupsBracket() {
+      const grid = document.getElementById('groupsBracketGrid');
+      grid.innerHTML = GROUP_KEYS.map(g => {
+        const res = groupResults[g];
+        const teams = GROUPS[g];
+        return `<div class="grp-bracket-card">
+          <div class="grp-bracket-head">
+            <span class="grp-bracket-label">Group ${g}</span>
+            <button class="sim-grp-btn ${res?'done':''}" onclick="simOneGroup('${g}')">${res?'✓ Done':'▶ Simulate'}</button>
+          </div>
+          ${res ? `<table class="grp-bracket-table">
+            <thead><tr><th>Team</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
+            <tbody>${res.map((t,i)=>`<tr class="${i<2?'adv':i===2?'adv3':''}">
+              <td>${getFlag(t.name)} ${t.name}</td>
+              <td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
+              <td style="color:${t.gf-t.ga>=0?'#22c55e':'var(--red)'};">${t.gf-t.ga>=0?'+':''}${t.gf-t.ga}</td>
+              <td class="pts-cell">${t.pts}</td>
+            </tr>`).join('')}</tbody>
+          </table>` : `<div style="padding:1rem;">${teams.map(t=>`<div style="display:flex;align-items:center;gap:0.5rem;padding:0.35rem 0;font-size:0.82rem;font-weight:600;">${getFlag(t)} ${t}</div>`).join('')}</div>`}
+        </div>`;
+      }).join('');
+
+      const allDone = GROUP_KEYS.every(g => groupResults[g]);
+      document.getElementById('advanceToR32Wrap').style.display = allDone ? 'block' : 'none';
+    }
+
+    function simGroupGame(t1, t2) {
+      const s1 = 0.85 + (simpleHash(t1) % 25) / 100;
+      const s2 = 0.85 + (simpleHash(t2) % 25) / 100;
+      return { g1: poissonRand(s1 * 1.3), g2: poissonRand(s2 * 1.3) };
+    }
+
+    function simOneGroup(g) {
+      const teams = GROUPS[g];
+      const st = {};
+      teams.forEach(t => st[t] = {name:t,w:0,d:0,l:0,gf:0,ga:0,pts:0});
+      for (let i=0;i<teams.length;i++) for (let j=i+1;j<teams.length;j++) {
+        const {g1,g2} = simGroupGame(teams[i],teams[j]);
+        st[teams[i]].gf+=g1; st[teams[i]].ga+=g2;
+        st[teams[j]].gf+=g2; st[teams[j]].ga+=g1;
+        if (g1>g2){ st[teams[i]].w++; st[teams[i]].pts+=3; st[teams[j]].l++; }
+        else if (g1<g2){ st[teams[j]].w++; st[teams[j]].pts+=3; st[teams[i]].l++; }
+        else { st[teams[i]].d++; st[teams[i]].pts++; st[teams[j]].d++; st[teams[j]].pts++; }
+      }
+      groupResults[g] = Object.values(st).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
+      renderGroupsBracket();
+      renderBracketTabs();
+    }
+
+    function simAllGroups() {
+      GROUP_KEYS.forEach(g => { if (!groupResults[g]) simOneGroup(g); });
+    }
+
+    function resetBracket() {
+      groupResults = {};
+      brackets = {r32:[],r16:[],qf:[],sf:[],final:[],third:[]};
+      document.getElementById('championCard').classList.remove('show');
+      renderGroupsBracket();
+      renderBracketTabs();
+      showBracketRound('groups');
+      ['r32','r16','qf','sf','final'].forEach(r => {
+        const grid = document.getElementById(r+'grid');
+        if (grid) grid.innerHTML = '';
+      });
+    }
+
+    // ── Generate Knockout Bracket ────────────────────
+    function get3rdPlaceTeams() {
+      const thirds = GROUP_KEYS.map(g => groupResults[g]?.[2]).filter(Boolean);
+      return thirds.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf).slice(0,8);
+    }
+
+    function resolveSlot(slot) {
+      if (slot.t === 'W') return groupResults[slot.g]?.[0]?.name || 'TBD';
+      if (slot.t === 'R') return groupResults[slot.g]?.[1]?.name || 'TBD';
+      if (slot.t === 'T') return get3rdPlaceTeams()[slot.n]?.name || 'TBD';
+      return 'TBD';
+    }
+
+    function generateBracket() {
+      brackets.r32 = R32_SLOTS.map((pair, i) => ({
+        id: i, team1: resolveSlot(pair[0]), team2: resolveSlot(pair[1]),
+        score1: null, score2: null, winner: null
+      }));
+      // Pre-generate empty slots for subsequent rounds
+      brackets.r16   = Array.from({length:8},  (_,i)=>({id:i,team1:null,team2:null,score1:null,score2:null,winner:null}));
+      brackets.qf    = Array.from({length:4},  (_,i)=>({id:i,team1:null,team2:null,score1:null,score2:null,winner:null}));
+      brackets.sf    = Array.from({length:2},  (_,i)=>({id:i,team1:null,team2:null,score1:null,score2:null,winner:null}));
+      brackets.final = [{id:0,team1:null,team2:null,score1:null,score2:null,winner:null}];
+      brackets.third = [{id:0,team1:null,team2:null,score1:null,score2:null,winner:null}];
+
+      renderRoundGrid('r32');
+      renderBracketTabs();
+      showBracketRound('r32');
+      updateR32Sub();
+    }
+
+    function updateR32Sub() {
+      const done = brackets.r32.filter(m=>m.winner).length;
+      document.getElementById('r32sub').textContent = `${done} of 16 matches decided`;
+    }
+    function updateR16Sub() {
+      const done = brackets.r16.filter(m=>m.winner).length;
+      document.getElementById('r16sub').textContent = `${done} of 8 matches decided`;
+    }
+
+    // ── Render a round's matches ──────────────────────
+    function renderRoundGrid(round) {
+      const grid = document.getElementById(round+'grid');
+      const matches = brackets[round];
+      const roundLabels = {r32:'Round of 32',r16:'Round of 16',qf:'Quarter-Final',sf:'Semi-Final',final:'Final'};
+      grid.innerHTML = matches.map((m,i) => matchCard(round, i, m, roundLabels[round])).join('');
+    }
+
+    function matchCard(round, i, m, label) {
+      const t1 = m.team1||'TBD', t2 = m.team2||'TBD';
+      const isTBD1 = !m.team1, isTBD2 = !m.team2;
+      const w1 = m.winner === t1, w2 = m.winner === t2;
+      return `<div class="bmatch" id="bmatch-${round}-${i}">
+        <div class="bmatch-lbl">
+          <span>${label} · Match ${i+1}</span>
+          ${m.winner ? '<span style="color:#22c55e;font-weight:700;">✓ Done</span>' : ''}
+        </div>
+        <div class="bmatch-team ${isTBD1?'tbd':''} ${w1?'winner':m.winner&&!w1?'loser':''}" onclick="${!isTBD1&&!m.winner?`advanceTeam('${round}',${i},0)`:''}" >
+          <span class="bmatch-flag">${isTBD1?'🏳️':getFlag(t1)}</span>
+          <span class="bmatch-name">${t1}</span>
+          <span class="bmatch-score">${m.score1??'—'}</span>
+        </div>
+        <div class="bmatch-div"></div>
+        <div class="bmatch-team ${isTBD2?'tbd':''} ${w2?'winner':m.winner&&!w2?'loser':''}" onclick="${!isTBD2&&!m.winner?`advanceTeam('${round}',${i},1)`:''}" >
+          <span class="bmatch-flag">${isTBD2?'🏳️':getFlag(t2)}</span>
+          <span class="bmatch-name">${t2}</span>
+          <span class="bmatch-score">${m.score2??'—'}</span>
+        </div>
+        <div class="bmatch-foot">
+          <button class="bsim-btn" ${m.winner||isTBD1||isTBD2?'disabled':''} onclick="simBracketMatch('${round}',${i})">⚽ Simulate</button>
+        </div>
+      </div>`;
+    }
+
+    // Advance a team manually (click)
+    function advanceTeam(round, matchIdx, teamNum) {
+      const m = brackets[round][matchIdx];
+      if (m.winner || !m.team1 || !m.team2) return;
+      const winner = teamNum === 0 ? m.team1 : m.team2;
+      const loser  = teamNum === 0 ? m.team2 : m.team1;
+      m.winner = winner; m.score1 = teamNum===0?'W':'L'; m.score2 = teamNum===1?'W':'L';
+      propagateWinner(round, matchIdx, winner, loser);
+    }
+
+    // Simulate a bracket match
+    function simBracketMatch(round, i) {
+      const m = brackets[round][i];
+      if (!m.team1 || !m.team2 || m.winner) return;
+      const s1 = bracketTeamStrength(m.team1), s2 = bracketTeamStrength(m.team2);
+      let g1 = poissonRand(s1*1.3), g2 = poissonRand(s2*1.3);
+      let winner, loser, pen = false;
+      if (g1 === g2) { pen = true; winner = Math.random() < (s1/(s1+s2)) ? m.team1 : m.team2; loser = winner===m.team1?m.team2:m.team1; }
+      else { winner = g1>g2?m.team1:m.team2; loser = g1>g2?m.team2:m.team1; }
+      m.score1 = g1 + (pen && winner===m.team1 ? ' (p)' : '');
+      m.score2 = g2 + (pen && winner===m.team2 ? ' (p)' : '');
+      m.winner = winner;
+      propagateWinner(round, i, winner, loser);
+    }
+
+    function propagateWinner(round, i, winner, loser) {
+      // Feed winner into next round
+      const nextRound = {r32:'r16', r16:'qf', qf:'sf', sf:'final'};
+      const next = nextRound[round];
+      if (next) {
+        const nextMatchIdx = Math.floor(i/2);
+        const slot = i%2 === 0 ? 'team1' : 'team2';
+        brackets[next][nextMatchIdx][slot] = winner;
+        renderRoundGrid(next);
+      }
+      // Feed loser from SF into 3rd place
+      if (round === 'sf') {
+        brackets.third[0]['team'+(i+1)] = loser;
+      }
+      // Check for champion
+      if (round === 'final') {
+        showChampion(winner);
+      }
+      // Re-render current round
+      renderRoundGrid(round);
+      if (round==='r32') updateR32Sub();
+      if (round==='r16') updateR16Sub();
+      renderBracketTabs();
+    }
+
+    function bracketTeamStrength(teamName) {
+      let base = 0.75 + (simpleHash(teamName) % 25) / 100;
+      for (const [g, standings] of Object.entries(groupResults)) {
+        const entry = standings?.find(s => s.name === teamName);
+        if (entry) {
+          base += (3 - standings.indexOf(entry)) * 0.04;
+          base += (entry.pts / 9) * 0.08;
+          break;
+        }
+      }
+      return Math.min(1.15, base);
+    }
+
+    function simAllRound(round) {
+      const matches = brackets[round];
+      if (!matches?.length) return;
+      matches.forEach((m, i) => { if (!m.winner && m.team1 && m.team2) simBracketMatch(round, i); });
+    }
+
+    function showChampion(teamName) {
+      const card = document.getElementById('championCard');
+      document.getElementById('champFlag').textContent = getFlag(teamName);
+      document.getElementById('champName').textContent = teamName;
+      card.classList.add('show');
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ── Toast ─────────────────────────────────────────
+    function showToast(msg) {
+      const t = document.createElement('div'); t.textContent = msg;
+      Object.assign(t.style, { position:'fixed', bottom:'1.5rem', left:'50%', transform:'translateX(-50%)', background:'var(--bg-card)', border:'1px solid var(--border-bright)', borderRadius:'10px', padding:'0.6rem 1.25rem', fontSize:'0.82rem', fontWeight:'600', zIndex:'9999', boxShadow:'0 8px 24px rgba(0,0,0,0.4)' });
+      document.body.appendChild(t); setTimeout(()=>t.remove(), 2500);
+    }
+
+    document.addEventListener('keydown', e => { if (e.key==='Escape') closeSlotPicker(); });
+    document.getElementById('slotPickerModal').addEventListener('wheel', e=>e.stopPropagation(), {passive:true});
+    document.getElementById('slotPickerModal').addEventListener('touchmove', e=>e.stopPropagation(), {passive:true});
+
+    // ── Init ──────────────────────────────────────────
+    renderFormationTabs();
+    async function initMyTeamPage() {
+      const bundled = await loadBundledSquads();
+      if (bundled) {
+        setStatus(`✓ ${bundled} squads loaded`, 'ok');
+        return;
+      }
+      setStatus('Roster data unavailable', 'err');
+    }
+    initMyTeamPage();
+  </script>
+</body>
+</html>

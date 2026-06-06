@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Locations – 2026 FIFA World Cup</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>⚽</text></svg>">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/gh/darkroomengineering/lenis@latest/bundled/lenis.js"></script>
+  <script src="theme.js"></script>
+  <script src="auth.js" defer></script>
+  <style>
+    #map {
+      height: clamp(320px, 50vw, 560px);
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">⚽ <span>World Cup</span> <span class="logo-tail">Field Guide</span></a>
+    <ul id="navMenu">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="games.html">Games</a></li>
+      <li><a href="groups.html">Groups</a></li>
+      <li><a href="locations.html" class="active">Locations</a></li>
+      <li><a href="calendar.html">Calendar</a></li>
+      <li><a href="teams.html">Teams</a></li>
+      <li><a href="myteam.html">My Team</a></li>
+      <li><a href="guide.html">Guide</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="clerk-auth signed-out" id="authControls">
+        <button class="auth-nav-btn" id="signInBtn" type="button">Sign in</button>
+        <button class="auth-nav-btn primary" id="signUpBtn" type="button">Sign up</button>
+        <div id="userButton"></div>
+      </div>
+      <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+      <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu Modal -->
+  <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" onclick="closeMobileMenu()"></div>
+  <div class="mobile-menu-modal" id="mobileMenuModal">
+    <a href="index.html" onclick="closeMobileMenu()">Home</a>
+    <a href="games.html" onclick="closeMobileMenu()">Games</a>
+    <a href="groups.html" onclick="closeMobileMenu()">Groups</a>
+    <a href="locations.html" class="active" onclick="closeMobileMenu()">Locations</a>
+    <a href="calendar.html" onclick="closeMobileMenu()">Calendar</a>
+    <a href="teams.html" onclick="closeMobileMenu()">Teams</a>
+    <a href="myteam.html" onclick="closeMobileMenu()">My Team</a>
+    <a href="guide.html" onclick="closeMobileMenu()">Guide</a>
+  </div>
+
+  <div class="container">
+    <div class="hero" style="padding:3rem 1.5rem 2.5rem;">
+      <div class="hero-eyebrow">📍 16 Venues</div>
+      <h1 style="font-size:clamp(2rem,5vw,3rem);"><em>Stadium</em> Map</h1>
+      <p class="hero-sub" style="margin-bottom:0;">Click any marker to see games at that venue</p>
+    </div>
+
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#e84040;box-shadow:0 0 5px rgba(232,64,64,0.6);"></div>
+        🇺🇸 United States (11)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#22c55e;box-shadow:0 0 5px rgba(34,197,94,0.6);"></div>
+        🇲🇽 Mexico (3)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#f5c842;box-shadow:0 0 5px rgba(245,200,66,0.6);"></div>
+        🇨🇦 Canada (2)
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:3rem;">
+      <div>
+        <div class="section-title">All 16 Stadiums</div>
+        <div class="section-sub">Click a card to fly to it on the map</div>
+      </div>
+    </div>
+    <div class="stadium-grid" id="stadiumGrid"></div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <p>© 2026 FIFA World Cup Fan Site &nbsp;·&nbsp; Created by <a href="https://linktr.ee/zachspam06" target="_blank" rel="noopener noreferrer">Zach Andelman</a></p>
+      <p>Not affiliated with FIFA or any official organization.</p>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Initialize Lenis smooth scrolling
+    const lenis = new Lenis();
+    lenis.on('scroll', (e) => {});
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
+    const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+
+    const DARK_TILE  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    const LIGHT_TILE = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    const ATTR = '© <a href="https://openstreetmap.org">OpenStreetMap</a> © <a href="https://carto.com">CARTO</a>';
+
+    const map = L.map('map', { center: [42, -100], zoom: 3, minZoom: 3, zoomControl: true });
+    let tileLayer = L.tileLayer(isDark() ? DARK_TILE : LIGHT_TILE, { attribution: ATTR, subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+
+    // Swap tile on theme change
+    window.addEventListener('themechange', (e) => {
+      map.removeLayer(tileLayer);
+      tileLayer = L.tileLayer(e.detail === 'dark' ? DARK_TILE : LIGHT_TILE, { attribution: ATTR, subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+    });
+
+    const markerMap = {};
+
+    function getMarkerClass(country) {
+      if (country === '🇲🇽') return 'marker-mex';
+      if (country === '🇨🇦') return 'marker-can';
+      return 'marker-usa';
+    }
+
+    function buildPopup(name, stadium) {
+      const games = GAMES.filter(g => g.stadium === name);
+      const preview = games.slice(0, 3);
+      const extra = games.length - 3;
+      return `
+        <div class="popup-stadium-name">${name}</div>
+        <div class="popup-city">${stadium.city} ${stadium.country}</div>
+        <div class="popup-stats">
+          <div class="popup-stat"><div class="popup-stat-num">${stadium.capacity.toLocaleString()}</div><div class="popup-stat-label">Capacity</div></div>
+          <div class="popup-stat"><div class="popup-stat-num">${games.length}</div><div class="popup-stat-label">Matches</div></div>
+        </div>
+        ${games.length > 0 ? `
+          <div class="popup-games-title">Matches</div>
+          ${preview.map(g => `
+            <div class="popup-game">
+              <div class="popup-game-date">${formatDate(g.date)} · ${g.time} ET</div>
+              <div class="popup-game-teams">${getFlag(g.team1)} ${g.team1} vs ${g.team2} ${getFlag(g.team2)}</div>
+            </div>`).join('')}
+          ${extra > 0 ? `<div class="popup-more">+ ${extra} more match${extra > 1 ? 'es' : ''}</div>` : ''}
+        ` : '<div style="color:var(--text-muted);font-size:0.8rem;">Knockout venue — teams TBD.</div>'}`;
+    }
+
+    Object.entries(STADIUMS).forEach(([name, stadium]) => {
+      const cls = getMarkerClass(stadium.country);
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="marker-pin ${cls}">⚽</div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+        popupAnchor: [0, -20],
+      });
+      const marker = L.marker([stadium.lat, stadium.lng], { icon }).addTo(map)
+        .bindPopup(buildPopup(name, stadium), { maxWidth: 300 });
+      markerMap[name] = marker;
+    });
+
+    // Stadium grid
+    const grid = document.getElementById('stadiumGrid');
+    Object.entries(STADIUMS).forEach(([name, stadium]) => {
+      const gamesCount = GAMES.filter(g => g.stadium === name).length;
+      const card = document.createElement('div');
+      card.className = 'stadium-card';
+      card.innerHTML = `
+        <div class="stadium-card-name">${name}</div>
+        <div class="stadium-card-city">${stadium.city} ${stadium.country}</div>
+        <div class="stadium-card-meta">
+          <div class="stadium-meta-item">
+            <div class="stadium-meta-label">Capacity</div>
+            <div class="stadium-meta-value">${stadium.capacity.toLocaleString()}</div>
+          </div>
+          <div class="stadium-meta-item">
+            <div class="stadium-meta-label">Matches</div>
+            <div class="stadium-meta-value">${gamesCount}</div>
+          </div>
+        </div>`;
+      card.addEventListener('click', () => {
+        map.setView([stadium.lat, stadium.lng], 10, { animate: true });
+        markerMap[name].openPopup();
+        document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>
